@@ -143,8 +143,8 @@
       rgba(255, 255, 255, 0.38) 38%,
       rgba(255, 255, 255, 0.58) 100%
     );
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
 }
 
   .landing-content {
@@ -166,7 +166,7 @@
     position: absolute;
     inset: -0.35rem;
     z-index: -1;
-    background: rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.52);
     border-radius: 4px;
   }
 
@@ -220,7 +220,7 @@
 
   .landing-content::before {
     inset: -0.25rem;
-    background: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.58);
   }
 
   .landing-small-title {
