@@ -1,0 +1,128 @@
+@import url("https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700;800;900&display=swap");
+
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap");
+
+:root {
+  --font-main: "Jost", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  --font-diatype: "ABCDiatype", -apple-system, "Helvetica Neue", "Droid Sans", Arial, sans-serif;
+  --font-heading-serif: Garamond, Baskerville, Caslon, serif;
+  --font-main-2: "Montserrat", HelveticaNeue, "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  --color-primary: #e52334;
+  --color-primary-dark: #bd1725;
+  --color-primary-soft: #fff0f2;
+
+
+--color-hero-red: #d14031;
+--color-hero-red-light: #f5bfb9;
+--color-hero-red-dark: #b83227;
+
+  --color-dark: #101010;
+  --color-dark-2: #1f1f1f;
+  --color-text: #2d2d2d;
+  --color-muted: #2d2d2d;
+  --color-light-text: #d6d6d6;
+
+  --color-white: #ffffff;
+  --color-surface: #f7f5f2;
+  --color-border: #e8e2dc;
+
+  --container-width: 1200px;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+
+  --shadow-soft: 0 12px 35px rgba(0, 0, 0, 0.08);
+
+  --space-xs: 0.35rem;
+  --space-sm: 0.65rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 5rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-main);
+  background: var(--color-white);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+}
+
+.container {
+  width: min(var(--container-width), calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.page-section {
+  padding: var(--space-3xl) 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-sm);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--color-dark);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  margin: 0 0 var(--space-md);
+}
+
+h1 {
+  font-size: clamp(2.4rem, 6vw, 5.2rem);
+}
+
+h2 {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+}
+
+h3 {
+  font-size: 1.45rem;
+}
+
+p {
+  margin: 0 0 var(--space-md);
+  color: var(--color-muted);
+  font-size: 1.05rem;
+}
