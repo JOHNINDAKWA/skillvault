@@ -324,8 +324,11 @@
 
 @media (max-width: 680px) {
   .top-bar-left {
-    gap: 0.8rem;
-    font-size: 0.72rem;
+    /* gap: 0.8rem;
+    font-size: 0.72rem; */
+    display: flex;
+    align-items: center;  
+    justify-content: space-evenly;
   }
 
   .top-bar-right {
@@ -337,7 +340,10 @@
   }
 
   .top-bar-left a:nth-child(2) {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;  
+    gap: 0.35rem;
   }
 
   .cart-link,
