@@ -1,0 +1,438 @@
+.admin-settings-page {
+  display: grid;
+  gap: 1.2rem;
+  font-family: var(--font-main-3);
+}
+
+.admin-settings-hero {
+  min-height: 230px;
+  background:
+    linear-gradient(90deg, rgba(17, 16, 14, 0.96), rgba(17, 16, 14, 0.72)),
+    url("../../../assets/images/bg-banner.png") center / cover no-repeat;
+  color: #ffffff;
+  padding: 1.6rem;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.admin-settings-hero span,
+.admin-settings-panel-heading span,
+.admin-settings-card span {
+  display: block;
+  margin-bottom: 0.55rem;
+  color: #d2a044;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+}
+
+.admin-settings-hero h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(2.4rem, 4vw, 4.7rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.065em;
+}
+
+.admin-settings-hero p {
+  max-width: 650px;
+  margin: 0.9rem 0 0;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.admin-settings-hero button,
+.admin-add-user-form button,
+.admin-settings-save-card button {
+  min-height: 44px;
+  border: 1px solid #996515;
+  background: #996515;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  padding: 0 1rem;
+  font-family: var(--font-main-3);
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.admin-settings-hero button:hover,
+.admin-add-user-form button:hover,
+.admin-settings-save-card button:hover {
+  background: #ffffff;
+  color: #996515;
+  transform: translateY(-1px);
+}
+
+.admin-settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.admin-settings-main,
+.admin-settings-side {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-settings-panel,
+.admin-settings-card,
+.admin-settings-save-card {
+  background: #ffffff;
+  border: 1px solid #e8e2dc;
+  padding: 1.2rem;
+}
+
+.admin-settings-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-settings-panel-heading > svg {
+  width: 44px;
+  height: 44px;
+  padding: 0.72rem;
+  border-radius: 999px;
+  background: #996515;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.admin-settings-panel-heading h2,
+.admin-settings-card h3,
+.admin-settings-save-card h3 {
+  margin: 0;
+  color: #11100e;
+  font-size: 1.18rem;
+  font-weight: 850;
+  letter-spacing: -0.035em;
+}
+
+.admin-settings-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.admin-settings-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-settings-field-full {
+  grid-column: 1 / -1;
+}
+
+.admin-settings-field span {
+  color: #70685f;
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-settings-field input,
+.admin-settings-field textarea,
+.admin-user-row select {
+  width: 100%;
+  border: 1px solid #e8e2dc;
+  background: #fbfaf7;
+  color: #11100e;
+  font-family: var(--font-main-3);
+  font-size: 0.86rem;
+  font-weight: 700;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.admin-settings-field input,
+.admin-user-row select {
+  min-height: 44px;
+  padding: 0 0.85rem;
+}
+
+.admin-settings-field textarea {
+  resize: vertical;
+  min-height: 110px;
+  padding: 0.8rem 0.85rem;
+  line-height: 1.6;
+}
+
+.admin-settings-field input:focus,
+.admin-settings-field textarea:focus,
+.admin-user-row select:focus {
+  background: #ffffff;
+  border-color: rgba(153, 101, 21, 0.45);
+  box-shadow: 0 0 0 3px rgba(153, 101, 21, 0.08);
+}
+
+.admin-add-user-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+}
+
+.admin-add-user-form label {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid #e8e2dc;
+  background: #fbfaf7;
+  color: #70685f;
+  padding: 0 0.85rem;
+}
+
+.admin-add-user-form input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #11100e;
+  font-family: var(--font-main-3);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.admin-users-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.admin-user-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 120px 90px 38px;
+  gap: 0.7rem;
+  align-items: center;
+  background: #fbfaf7;
+  border: 1px solid #e8e2dc;
+  padding: 0.75rem;
+}
+
+.admin-user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: #996515;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.admin-user-info {
+  min-width: 0;
+}
+
+.admin-user-info strong {
+  display: block;
+  color: #11100e;
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.admin-user-info span {
+  display: block;
+  margin-top: 0.2rem;
+  color: #70685f;
+  font-size: 0.72rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.admin-user-status {
+  width: fit-content;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.55rem;
+  font-size: 0.62rem;
+  font-style: normal;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.admin-user-status-active {
+  background: #f2eadc;
+  color: #996515;
+}
+
+.admin-user-status-pending {
+  background: #fff3d9;
+  color: #9a6a12;
+}
+
+.admin-user-row > button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #e8e2dc;
+  background: #ffffff;
+  color: #11100e;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.admin-user-row > button:hover:not(:disabled) {
+  background: #11100e;
+  color: #ffffff;
+  border-color: #11100e;
+}
+
+.admin-user-row > button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.admin-settings-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.admin-settings-card > svg,
+.admin-settings-save-card > svg {
+  width: 44px;
+  height: 44px;
+  padding: 0.72rem;
+  border-radius: 999px;
+  background: #996515;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.admin-settings-card p,
+.admin-settings-save-card p {
+  margin: 0.55rem 0 0;
+  color: #70685f;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.admin-toggle-row {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-top: 0.9rem;
+  border-top: 1px solid #e8e2dc;
+  padding-top: 0.85rem;
+}
+
+.admin-toggle-row span {
+  margin: 0;
+  color: #11100e;
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.admin-toggle-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: #996515;
+}
+
+.admin-settings-save-card {
+  background: #11100e;
+  color: #ffffff;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.admin-settings-save-card h3 {
+  color: #ffffff;
+}
+
+.admin-settings-save-card p {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.admin-settings-save-card button {
+  margin-top: 1rem;
+}
+
+@media (max-width: 1180px) {
+  .admin-settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-settings-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .admin-settings-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-settings-side {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-add-user-form,
+  .admin-user-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-user-row select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  .admin-settings-hero {
+    padding: 1.25rem;
+  }
+
+  .admin-settings-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-settings-field-full {
+    grid-column: auto;
+  }
+
+  .admin-settings-panel,
+  .admin-settings-card,
+  .admin-settings-save-card {
+    padding: 1rem;
+  }
+}

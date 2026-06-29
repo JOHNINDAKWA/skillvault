@@ -1,0 +1,252 @@
+.account-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  background: #f7f5f2;
+  font-family: var(--font-main-3);
+
+}
+
+.account-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  background: var(--color-dark);
+  color: var(--color-white);
+  padding: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  z-index: 80;
+  font-family: var(--font-main-3);
+
+}
+
+.account-sidebar-top {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.account-sidebar .logo,
+.account-sidebar a {
+  color: inherit;
+}
+
+.account-sidebar-close {
+  display: none;
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-white);
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.account-nav {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1.5rem;
+}
+
+.account-nav a,
+.account-sidebar-bottom a,
+.account-sidebar-bottom button {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  text-decoration: none;
+  padding: 0 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 750;
+  text-align: left;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.account-nav a:hover,
+.account-nav a.active {
+  background: rgba(153, 101, 21, 0.22);
+  color: var(--color-white);
+  transform: translateX(2px);
+}
+
+.account-nav svg,
+.account-sidebar-bottom svg {
+  color: #d2a044;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.account-sidebar-bottom {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: auto;
+  padding-top: 1.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.account-sidebar-bottom button {
+  cursor: pointer;
+}
+
+.account-main-shell {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.account-header {
+  min-height: 82px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  padding: 0 2rem;
+}
+
+.account-header > div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.account-header span {
+  color: var(--color-hero-red);
+  font-size: 0.7rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+}
+
+.account-header strong {
+  color: var(--color-dark);
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.account-menu-btn,
+.account-header-profile {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(153, 101, 21, 0.28);
+  background: #fffaf2;
+  color: var(--color-dark);
+  text-decoration: none;
+  padding: 0 1rem;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.account-menu-btn svg,
+.account-header-profile svg {
+  color: var(--color-hero-red);
+  font-size: 1rem;
+}
+
+.account-menu-btn:hover,
+.account-header-profile:hover {
+  background: var(--color-hero-red);
+  color: var(--color-white);
+  border-color: var(--color-hero-red);
+  transform: translateY(-1px);
+}
+
+.account-menu-btn:hover svg,
+.account-header-profile:hover svg {
+  color: var(--color-white);
+}
+.account-menu-btn {
+  display: none;
+  width: 42px;
+  padding: 0;
+  font-size: 1.1rem;
+}
+
+.account-main {
+  min-width: 0;
+  padding: 2rem;
+}
+
+.account-sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .account-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .account-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(320px, 88vw);
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  .account-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .account-sidebar-close {
+    display: inline-flex;
+  }
+
+  .account-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    border: none;
+    background: rgba(0, 0, 0, 0.44);
+  }
+
+  .account-menu-btn {
+    display: inline-flex;
+  }
+
+  .account-header {
+    padding: 0 1rem;
+  }
+
+  .account-main {
+    padding: 1.2rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .account-header-profile {
+    font-size: 0;
+    width: 42px;
+    padding: 0;
+    gap: 0;
+  }
+
+  .account-header-profile svg {
+    font-size: 1rem;
+  }
+
+  .account-main {
+    padding: 1rem;
+  }
+}
