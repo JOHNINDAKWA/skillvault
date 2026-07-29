@@ -15,6 +15,12 @@ export const ResourcesContext = createContext(null);
 const BASKET_STORAGE_KEY = "skillvault_basket_items";
 const BASKET_STORAGE_VERSION = 2;
 
+const CHECKOUT_SESSION_STORAGE_KEY =
+  "skillvault_checkout_session_v1";
+
+const PURCHASE_ACCESS_STORAGE_KEY =
+  "skillvault_purchase_access_v1";
+
 function normalizeCatalogue(remoteResources) {
   const localBySlug = new Map(
     localResources.map((resource) => [resource.slug, resource])
@@ -181,6 +187,40 @@ function saveBasketItems(items) {
   }
 }
 
+function invalidateStoredCheckout({
+  clearCompletedPurchase = false,
+} = {}) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    /*
+     * Any basket change invalidates the checkout session because its
+     * item signature may no longer match the current basket.
+     */
+    window.sessionStorage.removeItem(
+      CHECKOUT_SESSION_STORAGE_KEY
+    );
+
+    /*
+     * Adding a resource means the customer is beginning a new purchase.
+     * Remove the previous checkout download screen so the next visit to
+     * /checkout starts with customer details and payment.
+     */
+    if (clearCompletedPurchase) {
+      window.sessionStorage.removeItem(
+        PURCHASE_ACCESS_STORAGE_KEY
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Failed to reset stored checkout state:",
+      error
+    );
+  }
+}
+
 export function ResourcesProvider({ children }) {
   const [catalogue, setCatalogue] = useState(localResources);
   const [isLoadingResources, setIsLoadingResources] = useState(true);
@@ -328,6 +368,15 @@ export function ResourcesProvider({ children }) {
           getResourceIdentifier(item) === resourceIdentifier
       );
 
+      /*
+       * Clicking Add to basket signals a new purchase, even when the
+       * resource was already present. Clear the previous completed-order
+       * checkout state before the customer returns to checkout.
+       */
+      invalidateStoredCheckout({
+        clearCompletedPurchase: true,
+      });
+
       if (!alreadyInBasket) {
         setBasketItems((currentItems) =>
           deduplicateResources([...currentItems, resource])
@@ -344,6 +393,8 @@ export function ResourcesProvider({ children }) {
   );
 
   const removeFromBasket = useCallback((resourceIdentifier) => {
+    invalidateStoredCheckout();
+
     setBasketItems((currentItems) =>
       currentItems.filter(
         (item) =>
@@ -354,6 +405,12 @@ export function ResourcesProvider({ children }) {
   }, []);
 
   const clearBasket = useCallback(() => {
+    /*
+     * Clear only the active checkout session here. Do not delete completed
+     * purchase access because Checkout saves that access immediately before
+     * clearing the basket after successful payment.
+     */
+    invalidateStoredCheckout();
     setBasketItems([]);
   }, []);
 

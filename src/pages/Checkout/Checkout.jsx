@@ -114,6 +114,23 @@ function saveStoredPurchaseAccess(access) {
   }
 }
 
+function clearStoredPurchaseAccess() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.sessionStorage.removeItem(
+      PURCHASE_ACCESS_STORAGE_KEY
+    );
+  } catch (error) {
+    console.error(
+      "Failed to clear temporary purchase access:",
+      error
+    );
+  }
+}
+
 function createResourceSnapshot(item) {
   return {
     id: item.id || null,
@@ -302,6 +319,13 @@ function Checkout() {
     clearBasket,
   } = useResources();
 
+  /*
+   * A non-empty basket always represents a new purchase attempt.
+   * Previous download access must never replace the payment form for
+   * resources that are currently waiting in the basket.
+   */
+  const hasItems = basketItems.length > 0;
+
   const [customerDetails, setCustomerDetails] = useState({
     fullName: "",
     email: "",
@@ -317,13 +341,21 @@ function Checkout() {
   const [paymentError, setPaymentError] = useState("");
   const [accountCreated, setAccountCreated] = useState(false);
   const [completedOrder, setCompletedOrder] = useState(null);
-  const [downloads, setDownloads] = useState(() => {
-    return readStoredPurchaseAccess()?.downloads || [];
+
+  /*
+   * When the customer reaches checkout with items already in the basket,
+   * begin with a fresh checkout instead of restoring an older completed
+   * order from this browser tab.
+   */
+  const [purchaseAccess, setPurchaseAccess] = useState(() => {
+    return hasItems
+      ? null
+      : readStoredPurchaseAccess();
   });
 
-  const [purchaseAccess, setPurchaseAccess] = useState(
-    readStoredPurchaseAccess
-  );
+  const [downloads, setDownloads] = useState(() => {
+    return purchaseAccess?.downloads || [];
+  });
 
   const [isRefreshingDownloads, setIsRefreshingDownloads] =
     useState(false);
@@ -334,8 +366,6 @@ function Checkout() {
   const lastSavedSnapshot = useRef("");
   const restoredDownloadsRef = useRef(false);
 
-  const hasItems = basketItems.length > 0;
-
   const basketSignature = useMemo(
     () =>
       basketItems
@@ -345,6 +375,38 @@ function Checkout() {
         .join("|"),
     [basketItems]
   );
+
+  /*
+   * Defensive cleanup for customers who add another resource after a
+   * successful purchase. The old download state remains available only
+   * while the basket is empty. As soon as a new basket exists, checkout
+   * returns to the normal customer-details and payment flow.
+   */
+  useEffect(() => {
+    if (!hasItems) {
+      return;
+    }
+
+    clearStoredPurchaseAccess();
+
+    if (!purchaseAccess) {
+      return;
+    }
+
+    setPurchaseAccess(null);
+    setDownloads([]);
+    setCompletedOrder(null);
+    setDownloadError("");
+    setPaymentError("");
+    setPaymentStep("confirm");
+    setPaymentModalOpen(false);
+    setAccountCreated(false);
+
+    restoredDownloadsRef.current = false;
+  }, [
+    hasItems,
+    purchaseAccess,
+  ]);
 
   const checkoutIsReady = useMemo(
     () =>
@@ -764,7 +826,7 @@ function Checkout() {
     <>
       <main className="sv-checkout-page">
         <div className="container">
-          {purchaseAccess ? (
+          {purchaseAccess && !hasItems ? (
             <section
               className="sv-purchase-ready-page"
               aria-labelledby="sv-purchase-ready-title"
