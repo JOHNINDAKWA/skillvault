@@ -9,9 +9,11 @@ import {
   FiArrowUpRight,
   FiBookOpen,
   FiCheck,
+  FiCheckCircle,
   FiCreditCard,
   FiHeart,
   FiImage,
+  FiMoreVertical,
   FiRefreshCcw,
   FiShoppingBag,
   FiStar,
@@ -167,6 +169,179 @@ function RatingStars({ rating }) {
   );
 }
 
+
+function getReviewerInitials(name) {
+  if (!name?.trim()) {
+    return "SV";
+  }
+
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function formatReviewTime(value) {
+  if (!value) {
+    return "Recently";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  const differenceInSeconds =
+    Math.round(
+      (date.getTime() - Date.now()) / 1000
+    );
+
+  const formatter =
+    new Intl.RelativeTimeFormat(
+      "en",
+      {
+        numeric: "auto",
+      }
+    );
+
+  const ranges = [
+    {
+      limit: 60,
+      divisor: 1,
+      unit: "second",
+    },
+    {
+      limit: 60,
+      divisor: 60,
+      unit: "minute",
+    },
+    {
+      limit: 24,
+      divisor: 60 * 60,
+      unit: "hour",
+    },
+    {
+      limit: 7,
+      divisor: 60 * 60 * 24,
+      unit: "day",
+    },
+    {
+      limit: 5,
+      divisor: 60 * 60 * 24 * 7,
+      unit: "week",
+    },
+    {
+      limit: 12,
+      divisor: 60 * 60 * 24 * 30,
+      unit: "month",
+    },
+  ];
+
+  for (const range of ranges) {
+    const valueForUnit =
+      differenceInSeconds /
+      range.divisor;
+
+    if (
+      Math.abs(valueForUnit) <
+      range.limit
+    ) {
+      return formatter.format(
+        Math.round(valueForUnit),
+        range.unit
+      );
+    }
+  }
+
+  return formatter.format(
+    Math.round(
+      differenceInSeconds /
+        (
+          60 *
+          60 *
+          24 *
+          365
+        )
+    ),
+    "year"
+  );
+}
+
+function normalizeReview(
+  review,
+  index,
+  fallbackRating
+) {
+  if (
+    typeof review ===
+    "string"
+  ) {
+    return {
+      id: `review-${index}`,
+      name:
+        "SkillVault customer",
+      text: review,
+      rating:
+        Number(
+          fallbackRating || 5
+        ),
+      time:
+        "Recently",
+      verified:
+        true,
+      avatar:
+        "",
+    };
+  }
+
+  const name =
+    review?.reviewerName ||
+    review?.customerName ||
+    review?.name ||
+    review?.author ||
+    "SkillVault customer";
+
+  const text =
+    review?.comment ||
+    review?.text ||
+    review?.body ||
+    review?.review ||
+    "";
+
+  return {
+    id:
+      review?.id ||
+      `review-${index}`,
+    name,
+    text,
+    rating:
+      Number(
+        review?.rating ||
+        fallbackRating ||
+        5
+      ),
+    time:
+      formatReviewTime(
+        review?.createdAt ||
+        review?.date ||
+        review?.updatedAt
+      ),
+    verified:
+      review?.verifiedPurchase ??
+      review?.verified ??
+      true,
+    avatar:
+      extractImageUrl(
+        review?.avatar ||
+        review?.photo
+      ),
+  };
+}
+
 function ProductDetails() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -283,7 +458,33 @@ function ProductDetails() {
     ? product.included
     : defaultIncluded;
 
-  const reviews = product?.reviews?.filter(Boolean) || [];
+  const reviews = useMemo(
+    () =>
+      (
+        product?.reviews ||
+        []
+      )
+        .filter(Boolean)
+        .map(
+          (
+            review,
+            index
+          ) =>
+            normalizeReview(
+              review,
+              index,
+              product?.rating
+            )
+        )
+        .filter(
+          (review) =>
+            review.text
+        ),
+    [
+      product?.reviews,
+      product?.rating,
+    ]
+  );
 
   const handleBuyNow = () => {
     addToBasket(product);
@@ -373,9 +574,19 @@ function ProductDetails() {
         </nav>
 
         <section className="pdv-hero">
-          <div className="pdv-gallery">
+          <div
+            className={`pdv-gallery ${
+              galleryImages.length > 1
+                ? "has-thumbnails"
+                : "is-single-image"
+            }`}
+          >
             {galleryImages.length > 1 && (
-              <div className="pdv-thumbnails" aria-label="Product gallery">
+              <div
+                className="pdv-thumbnails"
+                aria-label="Product gallery"
+                data-count={`${galleryImages.length} images`}
+              >
                 {galleryImages.map((image, index) => (
                   <button
                     type="button"
@@ -568,26 +779,70 @@ function ProductDetails() {
 
           {reviews.length > 0 ? (
             <div className="pdv-review-list">
-              {reviews.map((review, index) => (
+              {reviews.map((review) => (
                 <article
                   className="pdv-review"
-                  key={`${product.slug}-review-${index}`}
+                  key={review.id}
                 >
-                  <div className="pdv-review-author">
-                    <span aria-hidden="true">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
+                  <div className="pdv-review-header">
+                    {review.avatar ? (
+                      <img
+                        src={review.avatar}
+                        alt=""
+                        className="pdv-review-avatar"
+                      />
+                    ) : (
+                      <span
+                        className="pdv-review-avatar"
+                        aria-hidden="true"
+                      >
+                        {getReviewerInitials(
+                          review.name
+                        )}
+                      </span>
+                    )}
 
-                    <div>
-                      <strong>SkillVault customer</strong>
-                      <small>Verified purchase</small>
+                    <div className="pdv-review-identity">
+                      <strong>
+                        {review.name}
+                      </strong>
+
+                      <small>
+                        {review.verified
+                          ? "Verified purchase"
+                          : "SkillVault customer"}
+                      </small>
                     </div>
+
+                    <button
+                      type="button"
+                      className="pdv-review-menu"
+                      aria-label="More review options"
+                    >
+                      <FiMoreVertical aria-hidden="true" />
+                    </button>
                   </div>
 
-                  <div className="pdv-review-copy">
-                    <RatingStars rating={product.rating} />
-                    <p>{review}</p>
+                  <div className="pdv-review-rating-line">
+                    <RatingStars
+                      rating={review.rating}
+                    />
+
+                    <span>
+                      {review.time}
+                    </span>
                   </div>
+
+                  <p className="pdv-review-text">
+                    {review.text}
+                  </p>
+
+                  {review.verified && (
+                    <span className="pdv-review-verified">
+                      <FiCheckCircle aria-hidden="true" />
+                      Verified purchase
+                    </span>
+                  )}
                 </article>
               ))}
             </div>
