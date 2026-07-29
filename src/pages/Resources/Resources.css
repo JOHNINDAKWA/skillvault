@@ -718,12 +718,21 @@
     padding: 2.4rem 0;
   }
 
+  /*
+   * Keep the mobile catalogue controls intentionally simple:
+   * only the search bar remains visible.
+   */
   .catalogue-filter-panel {
-    grid-template-columns: 1fr;
-    padding: 0.9rem;
+    display: block;
+    padding: 0.75rem;
+  }
+
+  .catalogue-select-field {
+    display: none;
   }
 
   .catalogue-search {
+    width: 100%;
     grid-column: auto;
   }
 
