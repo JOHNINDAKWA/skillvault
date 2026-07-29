@@ -9,7 +9,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 2rem;
-  margin-bottom: clamp(2rem, 4vw, 3.2rem);
+  margin-bottom: clamp(1rem, 2vw, 1.6rem);
 }
 
 .sv-checkout-eyebrow {
@@ -25,10 +25,9 @@
 }
 
 .sv-checkout-header h1 {
-  max-width: 15ch;
   margin: 0;
   color: #000000;
-  font-size: clamp(2rem, 3.8vw, 3.25rem);
+  font-size: clamp(2rem, 2.8vw, 2.25rem);
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: -0.05em;
