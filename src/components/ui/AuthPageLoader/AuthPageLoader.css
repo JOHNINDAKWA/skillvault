@@ -1,0 +1,39 @@
+.auth-page-loader {
+  min-height: 55vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.9rem;
+  padding: 2rem;
+  background: #fbfaf7;
+  color: #11100e;
+}
+
+.auth-page-loader-spinner {
+  width: 38px;
+  height: 38px;
+  border: 3px solid rgba(153, 101, 21, 0.18);
+  border-top-color: #996515;
+  border-radius: 999px;
+  animation: auth-page-loader-spin 0.75s linear infinite;
+}
+
+.auth-page-loader p {
+  margin: 0;
+  color: #70685f;
+  font-size: 0.82rem;
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+@keyframes auth-page-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-page-loader-spinner {
+    animation-duration: 1.5s;
+  }
+}

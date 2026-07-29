@@ -1,0 +1,331 @@
+.account-dashboard-loading {
+  min-height: 65vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+.account-dashboard-loading h1 {
+  margin: 0;
+  color: var(--color-dark);
+  font-family: var(--font-heading-serif);
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  letter-spacing: -0.04em;
+}
+
+.account-dashboard-loading p {
+  max-width: 520px;
+  margin: 0.7rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.account-dashboard-spinner {
+  width: 42px;
+  height: 42px;
+  margin-bottom: 1rem;
+  border: 3px solid rgba(153, 101, 21, 0.18);
+  border-top-color: #996515;
+  border-radius: 999px;
+  animation: account-dashboard-spin 0.75s linear infinite;
+}
+
+.account-dashboard-spinner-small {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border-width: 2px;
+}
+
+.account-dashboard-message {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid transparent;
+  padding: 0.8rem 0.9rem;
+}
+
+.account-dashboard-message > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.account-dashboard-message strong {
+  font-size: 0.78rem;
+}
+
+.account-dashboard-message span {
+  font-size: 0.72rem;
+  line-height: 1.55;
+}
+
+.account-dashboard-message-error {
+  border-color: #efc2bd;
+  background: #fff1ef;
+  color: #9b2c22;
+}
+
+.account-dashboard-message button {
+  min-height: 38px;
+  border: 1px solid currentColor;
+  background: #ffffff;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 0.75rem;
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.account-stats-grid-connected {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.account-stat-card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.account-stat-card-link:hover {
+  color: inherit;
+}
+
+.account-panel-empty {
+  min-height: 270px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+  border: 1px dashed var(--color-border);
+  background: #fbfaf8;
+  padding: 1.2rem;
+}
+
+.account-panel-empty > svg {
+  width: 42px;
+  height: 42px;
+  color: var(--color-hero-red);
+}
+
+.account-panel-empty h3 {
+  margin: 0.75rem 0 0;
+  color: var(--color-dark);
+  font-family: var(--font-main-2);
+  font-size: 1rem;
+}
+
+.account-panel-empty p {
+  max-width: 500px;
+  margin: 0.45rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.74rem;
+  line-height: 1.55;
+}
+
+.account-panel-empty a {
+  min-height: 38px;
+  margin-top: 0.85rem;
+  background: var(--color-hero-red);
+  color: var(--color-white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.8rem;
+  text-decoration: none;
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.account-panel-empty-compact {
+  min-height: 220px;
+}
+
+.account-inline-loading {
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  color: var(--color-muted);
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.account-wishlist-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.account-wishlist-preview-card {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  background: #fbfaf8;
+  padding: 0.8rem;
+}
+
+.account-wishlist-preview-image {
+  display: block;
+  width: 92px;
+  aspect-ratio: 1 / 1.08;
+  overflow: hidden;
+  background: #f4f4f4;
+}
+
+.account-wishlist-preview-image img,
+.account-resource-image-placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.account-resource-image-placeholder {
+  min-height: 64px;
+  display: grid;
+  place-items: center;
+  background: #f2eadc;
+  color: #996515;
+}
+
+.account-resource-image-placeholder svg {
+  width: 26px;
+  height: 26px;
+}
+
+.account-wishlist-preview-card > div > span {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--color-muted);
+  font-size: 0.66rem;
+  font-weight: 750;
+}
+
+.account-wishlist-preview-card h3 {
+  margin: 0;
+  color: var(--color-dark);
+  font-family: var(--font-main-2);
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.account-wishlist-preview-card h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.account-wishlist-preview-card h3 a:hover {
+  color: var(--color-hero-red);
+}
+
+.account-wishlist-preview-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 0.65rem;
+}
+
+.account-wishlist-preview-bottom strong {
+  color: var(--color-hero-red);
+  font-size: 0.78rem;
+}
+
+.account-wishlist-preview-bottom a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-dark);
+  text-decoration: none;
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.account-wishlist-preview-bottom a:hover {
+  color: var(--color-hero-red);
+}
+
+.recent-purchase-row small {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--color-muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.recent-purchase-row > div > .account-resource-image-placeholder {
+  width: 58px;
+  height: 64px;
+  min-height: 64px;
+  flex-shrink: 0;
+}
+
+.continue-image > .account-resource-image-placeholder {
+  min-height: 118px;
+}
+
+@keyframes account-dashboard-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1320px) {
+  .account-stats-grid-connected {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .account-wishlist-preview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1120px) {
+  .account-stats-grid-connected {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .account-dashboard-message {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .account-stats-grid-connected {
+    grid-template-columns: 1fr;
+  }
+
+  .account-wishlist-preview-card {
+    grid-template-columns: 80px minmax(0, 1fr);
+  }
+
+  .account-wishlist-preview-image {
+    width: 80px;
+  }
+}
+
+@media (max-width: 460px) {
+  .account-wishlist-preview-card {
+    grid-template-columns: 1fr;
+  }
+
+  .account-wishlist-preview-image {
+    width: 110px;
+  }
+}

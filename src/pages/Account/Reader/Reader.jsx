@@ -1,346 +1,1153 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { Document, Page, pdfjs } from "react-pdf";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  Link,
+  useParams,
+} from "react-router-dom";
+
+import {
+  Document,
+  Page,
+  pdfjs,
+} from "react-pdf";
+
 import {
   FiArrowLeft,
+  FiChevronLeft,
+  FiChevronRight,
   FiDownload,
+  FiFileText,
   FiMaximize,
   FiMinimize,
   FiMinus,
   FiMoon,
   FiPlus,
+  FiRefreshCcw,
   FiSun,
 } from "react-icons/fi";
 
-import { resources } from "../../../data/resources.js";
-import trainingPdf from "../../../assets/docs/Maternal-Massage-Training.pdf";
+import {
+  accountDashboardService,
+} from "../../../services/accountDashboardService.js";
 
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import "./Reader.css";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString();
+pdfjs.GlobalWorkerOptions.workerSrc =
+  new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url
+  ).toString();
 
-const READER_THEME_KEY = "skillvault_reader_theme";
+const READER_THEME_KEY =
+  "skillvault_reader_theme";
 
-function getDefaultScale() {
-  if (typeof window === "undefined") {
-    return 1.5;
-  }
-
-  if (window.innerWidth <= 560) {
-    return 1;
-  }
-
-  if (window.innerWidth <= 900) {
-    return 1.15;
-  }
-
-  return 1.5;
+function clamp(
+  value,
+  minimum,
+  maximum
+) {
+  return Math.min(
+    Math.max(
+      value,
+      minimum
+    ),
+    maximum
+  );
 }
 
 function Reader() {
-  const { slug } = useParams();
+  const {
+    slug,
+  } = useParams();
 
-  const readerRef = useRef(null);
-  const documentShellRef = useRef(null);
-  const pageRefs = useRef([]);
+  const readerRef =
+    useRef(null);
 
-  const [numPages, setNumPages] = useState(null);
-  const [scale, setScale] = useState(() => getDefaultScale());
-  const [fitWidth, setFitWidth] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [readingProgress, setReadingProgress] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [readerTheme, setReaderTheme] = useState(() => {
-    return localStorage.getItem(READER_THEME_KEY) || "light";
+  const documentShellRef =
+    useRef(null);
+
+  const pageRefs =
+    useRef([]);
+
+  const scrollFrameRef =
+    useRef(null);
+
+  const hasRestoredPosition =
+    useRef(false);
+
+  const lastSavedProgress =
+    useRef(0);
+
+  const [
+    resource,
+    setResource,
+  ] = useState(null);
+
+  const [
+    resourceError,
+    setResourceError,
+  ] = useState("");
+
+  const [
+    pdfError,
+    setPdfError,
+  ] = useState("");
+
+  const [
+    isLoadingResource,
+    setIsLoadingResource,
+  ] = useState(true);
+
+  const [
+    isDownloading,
+    setIsDownloading,
+  ] = useState(false);
+
+  const [
+    progressSaveState,
+    setProgressSaveState,
+  ] = useState("idle");
+
+  const [
+    numPages,
+    setNumPages,
+  ] = useState(0);
+
+  const [
+    currentPage,
+    setCurrentPage,
+  ] = useState(1);
+
+  const [
+    viewerWidth,
+    setViewerWidth,
+  ] = useState(900);
+
+  const [
+    zoom,
+    setZoom,
+  ] = useState(1);
+
+  const [
+    isFullscreen,
+    setIsFullscreen,
+  ] = useState(false);
+
+  const [
+    readerTheme,
+    setReaderTheme,
+  ] = useState(() => {
+    return (
+      localStorage.getItem(
+        READER_THEME_KEY
+      ) ||
+      "light"
+    );
   });
 
-  const resource = useMemo(() => {
-    return resources.find((item) => item.slug === slug) || resources[0];
-  }, [slug]);
-
-  const pages = useMemo(() => {
-    if (!numPages) {
-      return [];
-    }
-
-    return Array.from({ length: numPages }, (_, index) => index + 1);
-  }, [numPages]);
-
-  const shouldUseFitWidth = fitWidth !== null;
-
-  const onDocumentLoadSuccess = ({ numPages: loadedPages }) => {
-    setNumPages(loadedPages);
-  };
-
-  const updateFitWidth = () => {
-    const shell = documentShellRef.current;
-
-    if (!shell) {
-      return;
-    }
-
-    if (window.innerWidth <= 700) {
-      const availableWidth = shell.clientWidth - 24;
-      setFitWidth(Math.max(availableWidth, 260));
-      setScale(1);
-      return;
-    }
-
-    setFitWidth(null);
-  };
-
-  const updateReadingState = () => {
-    const shell = documentShellRef.current;
-
-    if (!shell) {
-      return;
-    }
-
-    const maxScroll = shell.scrollHeight - shell.clientHeight;
-
-    if (maxScroll <= 0) {
-      setReadingProgress(0);
-    } else {
-      const progress = Math.round((shell.scrollTop / maxScroll) * 100);
-      setReadingProgress(Math.min(Math.max(progress, 0), 100));
-    }
-
-    const shellTop = shell.getBoundingClientRect().top;
-    let closestPage = 1;
-    let closestDistance = Infinity;
-
-    pageRefs.current.forEach((pageElement, index) => {
-      if (!pageElement) {
-        return;
+  const pages =
+    useMemo(() => {
+      if (!numPages) {
+        return [];
       }
 
-      const pageTop = pageElement.getBoundingClientRect().top;
-      const distance = Math.abs(pageTop - shellTop - 24);
+      return Array.from(
+        {
+          length:
+            numPages,
+        },
+        (
+          _,
+          index
+        ) =>
+          index + 1
+      );
+    }, [numPages]);
 
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestPage = index + 1;
+  const basePageWidth =
+    useMemo(() => {
+      return clamp(
+        viewerWidth - 44,
+        280,
+        1180
+      );
+    }, [viewerWidth]);
+
+  const renderedPageWidth =
+    useMemo(() => {
+      return Math.round(
+        basePageWidth *
+        zoom
+      );
+    }, [
+      basePageWidth,
+      zoom,
+    ]);
+
+  const readingPercent =
+    useMemo(() => {
+      if (!numPages) {
+        return Number(
+          resource?.progress ||
+          0
+        );
       }
-    });
 
-    setCurrentPage(closestPage);
-  };
+      return clamp(
+        Math.round(
+          (
+            currentPage /
+            numPages
+          ) *
+          100
+        ),
+        0,
+        100
+      );
+    }, [
+      currentPage,
+      numPages,
+      resource,
+    ]);
 
-  const zoomOut = () => {
-    setFitWidth(null);
-    setScale((currentScale) => Math.max(currentScale - 0.15, 0.7));
-  };
+  const loadReader =
+    useCallback(
+      async () => {
+        setIsLoadingResource(
+          true
+        );
 
-  const zoomIn = () => {
-    setFitWidth(null);
-    setScale((currentScale) => Math.min(currentScale + 0.15, 2));
-  };
+        setResourceError("");
+        setPdfError("");
+        setNumPages(0);
+        setCurrentPage(1);
+        setZoom(1);
 
-  const resetFitView = () => {
-    if (window.innerWidth <= 700) {
-      updateFitWidth();
-      return;
-    }
+        pageRefs.current = [];
 
-    setFitWidth(null);
-    setScale(1.5);
-  };
+        hasRestoredPosition.current =
+          false;
 
-  const toggleReaderTheme = () => {
-    setReaderTheme((currentTheme) =>
-      currentTheme === "dark" ? "light" : "dark"
+        try {
+          const response =
+            await accountDashboardService.getReaderResource(
+              slug
+            );
+
+          const nextResource =
+            response.data.reader;
+
+          setResource(
+            nextResource
+          );
+
+          lastSavedProgress.current =
+            Number(
+              nextResource.progress ||
+              0
+            );
+        } catch (error) {
+          setResource(null);
+
+          setResourceError(
+            error.message
+          );
+        } finally {
+          setIsLoadingResource(
+            false
+          );
+        }
+      },
+      [slug]
     );
-  };
-
-  const toggleFullscreen = async () => {
-    if (!readerRef.current) {
-      return;
-    }
-
-    if (!document.fullscreenElement) {
-      await readerRef.current.requestFullscreen();
-      setIsFullscreen(true);
-      return;
-    }
-
-    await document.exitFullscreen();
-    setIsFullscreen(false);
-  };
-
-  const exitFullscreen = async () => {
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
-    }
-
-    setIsFullscreen(false);
-  };
 
   useEffect(() => {
-    localStorage.setItem(READER_THEME_KEY, readerTheme);
+    loadReader();
+  }, [loadReader]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      READER_THEME_KEY,
+      readerTheme
+    );
   }, [readerTheme]);
 
   useEffect(() => {
-    updateFitWidth();
+    const shell =
+      documentShellRef.current;
 
-    const handleResize = () => {
-      updateFitWidth();
-    };
+    if (!shell) {
+      return undefined;
+    }
 
-    window.addEventListener("resize", handleResize);
+    const updateWidth =
+      () => {
+        setViewerWidth(
+          Math.max(
+            shell.clientWidth,
+            320
+          )
+        );
+      };
+
+    updateWidth();
+
+    const observer =
+      new ResizeObserver(
+        updateWidth
+      );
+
+    observer.observe(
+      shell
+    );
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      observer.disconnect();
+    };
+  }, [
+    isLoadingResource,
+    resource,
+  ]);
+
+  useEffect(() => {
+    const handleFullscreenChange =
+      () => {
+        setIsFullscreen(
+          Boolean(
+            document.fullscreenElement
+          )
+        );
+      };
+
+    document.addEventListener(
+      "fullscreenchange",
+      handleFullscreenChange
+    );
+
+    return () => {
+      document.removeEventListener(
+        "fullscreenchange",
+        handleFullscreenChange
+      );
     };
   }, []);
 
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement));
+  const updateVisiblePage =
+    useCallback(() => {
+      const shell =
+        documentShellRef.current;
+
+      if (
+        !shell ||
+        !numPages
+      ) {
+        return;
+      }
+
+      const shellRect =
+        shell.getBoundingClientRect();
+
+      const targetY =
+        shellRect.top +
+        Math.min(
+          shellRect.height *
+            0.32,
+          240
+        );
+
+      let closestPage =
+        currentPage;
+
+      let closestDistance =
+        Number.POSITIVE_INFINITY;
+
+      pageRefs.current.forEach(
+        (
+          pageElement,
+          index
+        ) => {
+          if (!pageElement) {
+            return;
+          }
+
+          const pageRect =
+            pageElement.getBoundingClientRect();
+
+          const distance =
+            Math.abs(
+              pageRect.top -
+              targetY
+            );
+
+          if (
+            distance <
+            closestDistance
+          ) {
+            closestDistance =
+              distance;
+
+            closestPage =
+              index + 1;
+          }
+        }
+      );
+
+      setCurrentPage(
+        closestPage
+      );
+    }, [
+      currentPage,
+      numPages,
+    ]);
+
+  const handleDocumentScroll =
+    () => {
+      if (
+        scrollFrameRef.current
+      ) {
+        cancelAnimationFrame(
+          scrollFrameRef.current
+        );
+      }
+
+      scrollFrameRef.current =
+        requestAnimationFrame(
+          updateVisiblePage
+        );
     };
 
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-
+  useEffect(() => {
     return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      if (
+        scrollFrameRef.current
+      ) {
+        cancelAnimationFrame(
+          scrollFrameRef.current
+        );
+      }
     };
   }, []);
 
+  const scrollToPage =
+    useCallback(
+      (
+        pageNumber,
+        behavior = "smooth"
+      ) => {
+        const nextPage =
+          clamp(
+            pageNumber,
+            1,
+            numPages ||
+              1
+          );
+
+        const element =
+          pageRefs.current[
+            nextPage -
+            1
+          ];
+
+        if (element) {
+          element.scrollIntoView({
+            behavior,
+            block:
+              "start",
+          });
+        }
+
+        setCurrentPage(
+          nextPage
+        );
+      },
+      [numPages]
+    );
+
   useEffect(() => {
-    window.setTimeout(updateReadingState, 200);
-  }, [numPages, scale, fitWidth]);
+    if (
+      !numPages ||
+      !resource ||
+      hasRestoredPosition.current
+    ) {
+      return undefined;
+    }
+
+    const storedProgress =
+      Number(
+        resource.progress ||
+        0
+      );
+
+    const targetPage =
+      storedProgress >
+      0
+        ? clamp(
+            Math.ceil(
+              (
+                storedProgress /
+                100
+              ) *
+              numPages
+            ),
+            1,
+            numPages
+          )
+        : 1;
+
+    const restoreTimer =
+      window.setTimeout(
+        () => {
+          scrollToPage(
+            targetPage,
+            "auto"
+          );
+
+          hasRestoredPosition.current =
+            true;
+        },
+        500
+      );
+
+    return () => {
+      window.clearTimeout(
+        restoreTimer
+      );
+    };
+  }, [
+    numPages,
+    resource,
+    scrollToPage,
+  ]);
+
+  useEffect(() => {
+    if (
+      !resource?.id ||
+      !numPages ||
+      !hasRestoredPosition.current
+    ) {
+      return undefined;
+    }
+
+    const progressToSave =
+      Math.max(
+        Number(
+          resource.progress ||
+          0
+        ),
+        readingPercent
+      );
+
+    if (
+      progressToSave <=
+      lastSavedProgress.current
+    ) {
+      return undefined;
+    }
+
+    setProgressSaveState(
+      "saving"
+    );
+
+    const saveTimer =
+      window.setTimeout(
+        async () => {
+          try {
+            await accountDashboardService.saveProgress(
+              resource.id,
+              progressToSave
+            );
+
+            lastSavedProgress.current =
+              progressToSave;
+
+            setResource(
+              (
+                currentResource
+              ) => ({
+                ...currentResource,
+                progress:
+                  progressToSave,
+              })
+            );
+
+            setProgressSaveState(
+              "saved"
+            );
+          } catch {
+            setProgressSaveState(
+              "error"
+            );
+          }
+        },
+        1200
+      );
+
+    return () => {
+      window.clearTimeout(
+        saveTimer
+      );
+    };
+  }, [
+    resource,
+    numPages,
+    readingPercent,
+  ]);
+
+  const onDocumentLoadSuccess =
+    ({
+      numPages:
+        loadedPages,
+    }) => {
+      setNumPages(
+        loadedPages
+      );
+
+      setPdfError("");
+    };
+
+  const onDocumentLoadError =
+    () => {
+      setPdfError(
+        "The private reader link could not load the PDF. Refreshing the reader normally resolves an expired link."
+      );
+    };
+
+  const zoomOut =
+    () => {
+      setZoom(
+        (
+          currentZoom
+        ) =>
+          clamp(
+            Number(
+              (
+                currentZoom -
+                0.1
+              ).toFixed(2)
+            ),
+            0.6,
+            2
+          )
+      );
+    };
+
+  const zoomIn =
+    () => {
+      setZoom(
+        (
+          currentZoom
+        ) =>
+          clamp(
+            Number(
+              (
+                currentZoom +
+                0.1
+              ).toFixed(2)
+            ),
+            0.6,
+            2
+          )
+      );
+    };
+
+  const resetFitView =
+    () => {
+      setZoom(1);
+    };
+
+  const toggleReaderTheme =
+    () => {
+      setReaderTheme(
+        (
+          currentTheme
+        ) =>
+          currentTheme ===
+          "dark"
+            ? "light"
+            : "dark"
+      );
+    };
+
+  const toggleFullscreen =
+    async () => {
+      if (
+        !readerRef.current
+      ) {
+        return;
+      }
+
+      if (
+        !document.fullscreenElement
+      ) {
+        await readerRef.current.requestFullscreen();
+        return;
+      }
+
+      await document.exitFullscreen();
+    };
+
+  const downloadResource =
+    async () => {
+      if (
+        !resource?.id
+      ) {
+        return;
+      }
+
+      setIsDownloading(
+        true
+      );
+
+      try {
+        const response =
+          await accountDashboardService.getDownload(
+            resource.id
+          );
+
+        const download =
+          response.data.download;
+
+        const anchor =
+          document.createElement(
+            "a"
+          );
+
+        anchor.href =
+          download.url;
+
+        anchor.target =
+          "_blank";
+
+        anchor.rel =
+          "noopener noreferrer";
+
+        anchor.download =
+          download.fileName ||
+          resource.fileName ||
+          "";
+
+        document.body.appendChild(
+          anchor
+        );
+
+        anchor.click();
+        anchor.remove();
+      } catch (error) {
+        setResourceError(
+          error.message
+        );
+      } finally {
+        setIsDownloading(
+          false
+        );
+      }
+    };
+
+  if (
+    isLoadingResource
+  ) {
+    return (
+      <section
+        className="reader-access-state"
+        role="status"
+      >
+        <span className="reader-access-spinner" />
+
+        <h1>
+          Opening your resource
+        </h1>
+
+        <p>
+          SkillVault is confirming your purchase and preparing a private PDF
+          session.
+        </p>
+      </section>
+    );
+  }
+
+  if (
+    resourceError ||
+    !resource
+  ) {
+    return (
+      <section className="reader-access-state reader-access-error">
+        <FiFileText />
+
+        <h1>
+          This resource cannot be opened
+        </h1>
+
+        <p>
+          {resourceError ||
+            "The resource is unavailable in your purchased library."}
+        </p>
+
+        <div className="reader-access-actions">
+          <button
+            type="button"
+            onClick={
+              loadReader
+            }
+          >
+            <FiRefreshCcw />
+            Try Again
+          </button>
+
+          <Link to="/account/library">
+            <FiArrowLeft />
+            Back To Library
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
       className={`reader-page ${
-        readerTheme === "dark" ? "reader-dark" : "reader-light"
+        readerTheme ===
+        "dark"
+          ? "reader-dark"
+          : "reader-light"
       }`}
-      ref={readerRef}
+      ref={
+        readerRef
+      }
     >
-      <header className="reader-topbar">
-        <div className="reader-title-block">
-          <Link to="/account/library" className="reader-back-link">
+      <header className="reader-toolbar">
+        <div className="reader-toolbar-left">
+          <Link
+            to="/account/library"
+            className="reader-icon-button"
+            aria-label="Back to library"
+            title="Back to library"
+          >
             <FiArrowLeft />
-            Library
           </Link>
 
-          <div>
-            <span>Reading Now</span>
-            <h1>{resource.title || "Maternal Massage Training"}</h1>
+          <div className="reader-file-title">
+            <FiFileText />
+
+            <div>
+              <strong>
+                {resource.title}
+              </strong>
+
+              <span>
+                {resource.category}{" "}
+                /{" "}
+                {resource.type}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="reader-actions">
-          <a href={trainingPdf} download className="reader-action-btn">
-            <FiDownload />
-            Download
-          </a>
+        <div className="reader-toolbar-center">
+          <div className="reader-control-group">
+            <button
+              type="button"
+              onClick={() =>
+                scrollToPage(
+                  currentPage -
+                    1
+                )
+              }
+              disabled={
+                currentPage <=
+                1
+              }
+              aria-label="Previous page"
+              title="Previous page"
+            >
+              <FiChevronLeft />
+            </button>
+
+            <span className="reader-page-counter">
+              <strong>
+                {currentPage}
+              </strong>
+
+              <em>
+                /{" "}
+                {numPages ||
+                  "—"}
+              </em>
+            </span>
+
+            <button
+              type="button"
+              onClick={() =>
+                scrollToPage(
+                  currentPage +
+                    1
+                )
+              }
+              disabled={
+                !numPages ||
+                currentPage >=
+                  numPages
+              }
+              aria-label="Next page"
+              title="Next page"
+            >
+              <FiChevronRight />
+            </button>
+          </div>
+
+          <div className="reader-control-group reader-zoom-group">
+            <button
+              type="button"
+              onClick={
+                zoomOut
+              }
+              disabled={
+                zoom <=
+                0.6
+              }
+              aria-label="Zoom out"
+              title="Zoom out"
+            >
+              <FiMinus />
+            </button>
+
+            <button
+              type="button"
+              className="reader-zoom-value"
+              onClick={
+                resetFitView
+              }
+              title="Fit page width"
+            >
+              {Math.round(
+                zoom *
+                100
+              )}
+              %
+            </button>
+
+            <button
+              type="button"
+              onClick={
+                zoomIn
+              }
+              disabled={
+                zoom >=
+                2
+              }
+              aria-label="Zoom in"
+              title="Zoom in"
+            >
+              <FiPlus />
+            </button>
+          </div>
+        </div>
+
+        <div className="reader-toolbar-right">
+          <div
+            className="reader-reading-status"
+            title="Saved reading progress"
+          >
+            <strong>
+              {readingPercent}%
+            </strong>
+
+            <span>
+              {progressSaveState ===
+                "saving" &&
+                "Saving"}
+
+              {progressSaveState ===
+                "saved" &&
+                "Saved"}
+
+              {progressSaveState ===
+                "error" &&
+                "Not saved"}
+
+              {progressSaveState ===
+                "idle" &&
+                "Read"}
+            </span>
+          </div>
 
           <button
             type="button"
-            className="reader-action-btn"
-            onClick={toggleFullscreen}
+            className="reader-icon-button"
+            onClick={
+              downloadResource
+            }
+            disabled={
+              isDownloading
+            }
+            aria-label="Download PDF"
+            title="Download PDF"
           >
-            <FiMaximize />
-            Fullscreen
+            {isDownloading ? (
+              <span className="reader-toolbar-spinner" />
+            ) : (
+              <FiDownload />
+            )}
+          </button>
+
+          <button
+            type="button"
+            className="reader-icon-button"
+            onClick={
+              toggleReaderTheme
+            }
+            aria-label={
+              readerTheme ===
+              "dark"
+                ? "Use light reader"
+                : "Use dark reader"
+            }
+            title={
+              readerTheme ===
+              "dark"
+                ? "Light reader"
+                : "Dark reader"
+            }
+          >
+            {readerTheme ===
+            "dark" ? (
+              <FiSun />
+            ) : (
+              <FiMoon />
+            )}
+          </button>
+
+          <button
+            type="button"
+            className="reader-icon-button"
+            onClick={
+              toggleFullscreen
+            }
+            aria-label={
+              isFullscreen
+                ? "Exit fullscreen"
+                : "Open fullscreen"
+            }
+            title={
+              isFullscreen
+                ? "Exit fullscreen"
+                : "Fullscreen"
+            }
+          >
+            {isFullscreen ? (
+              <FiMinimize />
+            ) : (
+              <FiMaximize />
+            )}
           </button>
         </div>
       </header>
 
-      <div className="reader-sticky-controls">
-        <div className="reader-progress-area">
-          <div className="reader-progress-info">
-            <span>{readingProgress}% read</span>
-
-            <p>
-              Page {currentPage}
-              {numPages ? ` of ${numPages}` : ""}
-            </p>
-          </div>
-
-          <div className="reader-progress-track">
-            <span style={{ width: `${readingProgress}%` }} />
-          </div>
-        </div>
-
-        <div className="reader-control-actions">
-          <button type="button" onClick={zoomOut}>
-            <FiMinus />
-          </button>
-
-          <button type="button" className="reader-scale-btn" onClick={resetFitView}>
-            {shouldUseFitWidth ? "Fit" : `${Math.round(scale * 100)}%`}
-          </button>
-
-          <button type="button" onClick={zoomIn}>
-            <FiPlus />
-          </button>
-
-          <button type="button" onClick={toggleReaderTheme}>
-            {readerTheme === "dark" ? <FiSun /> : <FiMoon />}
-            {readerTheme === "dark" ? "Light" : "Dark"}
-          </button>
-        </div>
-      </div>
-
-      {isFullscreen && (
-        <button
-          type="button"
-          className="reader-fullscreen-exit"
-          onClick={exitFullscreen}
-        >
-          <FiMinimize />
-          Exit
-        </button>
-      )}
-
       <main
         className="reader-document-shell"
-        ref={documentShellRef}
-        onScroll={updateReadingState}
+        ref={
+          documentShellRef
+        }
+        onScroll={
+          handleDocumentScroll
+        }
       >
-        <div className="reader-document-stage">
-          <Document
-            file={trainingPdf}
-            onLoadSuccess={onDocumentLoadSuccess}
-            loading={
-              <div className="reader-loading">
-                <span />
-                <p>Loading reader...</p>
-              </div>
-            }
-            error={
-              <div className="reader-error">
-                <h2>Unable to open this resource</h2>
-                <p>Confirm the PDF exists under assets/docs and try again.</p>
-              </div>
-            }
-          >
-            {pages.map((page) => (
-              <div
-                className="reader-page-item"
-                key={page}
-                ref={(element) => {
-                  pageRefs.current[page - 1] = element;
-                }}
-              >
-                <Page
-                  pageNumber={page}
-                  scale={shouldUseFitWidth ? undefined : scale}
-                  width={shouldUseFitWidth ? fitWidth : undefined}
-                  renderTextLayer
-                  renderAnnotationLayer
-                />
+        {pdfError ? (
+          <div className="reader-pdf-error">
+            <FiFileText />
 
-                <span className="reader-page-number">Page {page}</span>
-              </div>
-            ))}
-          </Document>
-        </div>
+            <h2>
+              The PDF session needs to be refreshed
+            </h2>
+
+            <p>
+              {pdfError}
+            </p>
+
+            <button
+              type="button"
+              onClick={
+                loadReader
+              }
+            >
+              <FiRefreshCcw />
+              Refresh Reader
+            </button>
+          </div>
+        ) : (
+          <div className="reader-document-stage">
+            <Document
+              file={
+                resource.fileUrl
+              }
+              onLoadSuccess={
+                onDocumentLoadSuccess
+              }
+              onLoadError={
+                onDocumentLoadError
+              }
+              loading={
+                <div className="reader-document-loading">
+                  <span />
+
+                  <p>
+                    Rendering PDF...
+                  </p>
+                </div>
+              }
+            >
+              {pages.map(
+                (
+                  pageNumber
+                ) => (
+                  <div
+                    className="reader-pdf-page"
+                    key={
+                      pageNumber
+                    }
+                    ref={(
+                      element
+                    ) => {
+                      pageRefs.current[
+                        pageNumber -
+                          1
+                      ] =
+                        element;
+                    }}
+                  >
+                    <Page
+                      pageNumber={
+                        pageNumber
+                      }
+                      width={
+                        renderedPageWidth
+                      }
+                      renderTextLayer
+                      renderAnnotationLayer
+                      loading={
+                        <div className="reader-page-loading">
+                          Page{" "}
+                          {pageNumber}
+                        </div>
+                      }
+                    />
+
+                    <span className="reader-page-label">
+                      {pageNumber}
+                    </span>
+                  </div>
+                )
+              )}
+            </Document>
+          </div>
+        )}
       </main>
     </section>
   );

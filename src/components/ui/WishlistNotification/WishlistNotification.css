@@ -1,0 +1,186 @@
+.wishlist-login-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 650;
+  display: grid;
+  place-items: center;
+  background: rgba(17, 16, 14, 0.72);
+  padding: 1rem;
+}
+
+.wishlist-login-modal {
+  position: relative;
+  width: min(100%, 470px);
+  border: 1px solid #e8e2dc;
+  background: #ffffff;
+  padding: 1.55rem;
+}
+
+.wishlist-login-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e8e2dc;
+  background: #ffffff;
+  color: #11100e;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.wishlist-login-icon {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 1rem;
+  border-radius: 999px;
+  background: #f2eadc;
+  color: #996515;
+}
+
+.wishlist-login-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.wishlist-login-modal > span {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #996515;
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.wishlist-login-modal h2 {
+  margin: 0;
+  color: #11100e;
+  font-size: 1.55rem;
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+}
+
+.wishlist-login-modal p {
+  margin: 0.75rem 0 0;
+  color: #70685f;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.wishlist-login-modal p strong {
+  color: #11100e;
+}
+
+.wishlist-login-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 0.7rem;
+  margin-top: 1.25rem;
+}
+
+.wishlist-login-actions button {
+  min-height: 44px;
+  border: 1px solid #e8e2dc;
+  background: #ffffff;
+  color: #11100e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0 0.75rem;
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.wishlist-login-actions button.is-primary {
+  border-color: #996515;
+  background: #996515;
+  color: #ffffff;
+}
+
+.wishlist-toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 700;
+  width: min(calc(100% - 2rem), 430px);
+  min-height: 78px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 34px;
+  gap: 0.75rem;
+  align-items: center;
+  border: 1px solid #e8e2dc;
+  background: #ffffff;
+  padding: 0.75rem;
+  box-shadow: 0 18px 44px rgba(17, 16, 14, 0.16);
+}
+
+.wishlist-toast-success {
+  border-left: 4px solid #287a42;
+}
+
+.wishlist-toast-info {
+  border-left: 4px solid #996515;
+}
+
+.wishlist-toast-error {
+  border-left: 4px solid #a1352b;
+}
+
+.wishlist-toast-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: #f2eadc;
+  color: #996515;
+  display: grid;
+  place-items: center;
+}
+
+.wishlist-toast-icon svg {
+  fill: currentColor;
+}
+
+.wishlist-toast strong {
+  display: block;
+  color: #11100e;
+  font-size: 0.78rem;
+}
+
+.wishlist-toast p {
+  margin: 0.25rem 0 0;
+  color: #70685f;
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+
+.wishlist-toast > button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #e8e2dc;
+  background: #ffffff;
+  color: #11100e;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .wishlist-login-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .wishlist-toast {
+    right: 0.7rem;
+    bottom: 0.7rem;
+    width: calc(100% - 1.4rem);
+  }
+}

@@ -11,10 +11,10 @@ export const mainNavLinks = [
     label: "About",
     path: "/about",
   },
-  {
-    label: "Blog",
-    path: "/blog",
-  },
+  // {
+  //   label: "Blog",
+  //   path: "/blog",
+  // },
   {
     label: "Contact",
     path: "/contact",

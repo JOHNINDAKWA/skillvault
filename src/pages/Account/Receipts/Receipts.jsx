@@ -1,4 +1,13 @@
-import { Link } from "react-router-dom";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  Link,
+} from "react-router-dom";
+
 import {
   FiArrowRight,
   FiCheckCircle,
@@ -6,162 +15,726 @@ import {
   FiDownload,
   FiEye,
   FiFileText,
+  FiImage,
+  FiRefreshCcw,
   FiSearch,
+  FiShield,
+  FiX,
 } from "react-icons/fi";
 
-import { resources } from "../../../data/resources.js";
+import {
+  receiptService,
+} from "../../../services/receiptService.js";
+
 import "./Receipts.css";
 
-const receipts = resources.slice(0, 6).map((resource, index) => ({
-  id: `SV-${2026001 + index}`,
-  resource,
-  amount: resource.price,
-  method: ["M-Pesa", "Card", "M-Pesa", "Bank Transfer", "M-Pesa", "Card"][index],
-  date: [
-    "24 Jun 2026",
-    "21 Jun 2026",
-    "18 Jun 2026",
-    "14 Jun 2026",
-    "09 Jun 2026",
-    "02 Jun 2026",
-  ][index],
-  status: "Paid",
-}));
+function formatMoney(amount) {
+  return `KSh ${Number(
+    amount || 0
+  ).toLocaleString("en-US")}`;
+}
 
-function Receipts() {
-  const totalSpent = receipts.reduce((total, receipt) => total + receipt.amount, 0);
+function formatDate(value) {
+  if (!value) {
+    return "Not available";
+  }
+
+  return new Intl.DateTimeFormat(
+    "en-KE",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }
+  ).format(new Date(value));
+}
+
+function formatStatus(status) {
+  return String(status || "")
+    .replaceAll("_", " ")
+    .replace(
+      /\b\w/g,
+      (character) =>
+        character.toUpperCase()
+    );
+}
+
+function extractImageUrl(value) {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
+  if (!value || typeof value !== "object") {
+    return "";
+  }
+
+  const possibleUrls = [
+    value.url,
+    value.secureUrl,
+    value.secure_url,
+    value.src,
+  ];
 
   return (
-    <section className="receipts-page">
-      <div className="receipts-hero">
+    possibleUrls.find(
+      (url) =>
+        typeof url === "string" &&
+        url.trim()
+    )?.trim() || ""
+  );
+}
+
+function getImageCandidates(resource) {
+  return [
+    extractImageUrl(resource?.coverImage),
+    extractImageUrl(resource?.image),
+    extractImageUrl(resource?.thumbnail),
+    extractImageUrl(resource?.gallery?.[0]),
+  ].filter(Boolean);
+}
+
+function ReceiptResourceImage({
+  resource,
+}) {
+  const candidates =
+    getImageCandidates(resource);
+
+  const candidateKey =
+    candidates.join("|");
+
+  const [
+    candidateIndex,
+    setCandidateIndex,
+  ] = useState(0);
+
+  useEffect(() => {
+    setCandidateIndex(0);
+  }, [candidateKey]);
+
+  const source =
+    candidates[candidateIndex];
+
+  if (!source) {
+    return (
+      <div className="receipts-v2-image-placeholder">
+        <FiImage aria-hidden="true" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={source}
+      alt={
+        resource?.title ||
+        "SkillVault resource"
+      }
+      loading="lazy"
+      decoding="async"
+      onError={() =>
+        setCandidateIndex(
+          (currentIndex) =>
+            currentIndex + 1
+        )
+      }
+    />
+  );
+}
+
+function Receipts() {
+  const [
+    receipts,
+    setReceipts,
+  ] = useState([]);
+
+  const [
+    summary,
+    setSummary,
+  ] = useState({
+    totalReceipts: 0,
+    totalSpent: 0,
+    paidCount: 0,
+    refundedCount: 0,
+  });
+
+  const [
+    searchTerm,
+    setSearchTerm,
+  ] = useState("");
+
+  const [
+    isLoading,
+    setIsLoading,
+  ] = useState(true);
+
+  const [
+    pageError,
+    setPageError,
+  ] = useState("");
+
+  const [
+    pageMessage,
+    setPageMessage,
+  ] = useState("");
+
+  const [
+    downloadingOrderId,
+    setDownloadingOrderId,
+  ] = useState(null);
+
+  const loadReceipts = async () => {
+    setIsLoading(true);
+    setPageError("");
+
+    try {
+      const response =
+        await receiptService.listReceipts();
+
+      setReceipts(
+        response.data.receipts || []
+      );
+
+      setSummary(
+        response.data.summary || {
+          totalReceipts: 0,
+          totalSpent: 0,
+          paidCount: 0,
+          refundedCount: 0,
+        }
+      );
+    } catch (error) {
+      setPageError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadReceipts();
+  }, []);
+
+  const filteredReceipts =
+    useMemo(() => {
+      const normalizedSearch =
+        searchTerm
+          .trim()
+          .toLowerCase();
+
+      if (!normalizedSearch) {
+        return receipts;
+      }
+
+      return receipts.filter(
+        (receipt) => {
+          const resourceText =
+            (receipt.items || [])
+              .map((item) =>
+                [
+                  item.title,
+                  item.category,
+                  item.type,
+                  item.slug,
+                ]
+                  .filter(Boolean)
+                  .join(" ")
+              )
+              .join(" ");
+
+          const searchableText =
+            [
+              receipt.receiptNumber,
+              receipt.orderNumber,
+              receipt.mpesaReceiptNumber,
+              receipt.method,
+              receipt.status,
+              resourceText,
+            ]
+              .filter(Boolean)
+              .join(" ")
+              .toLowerCase();
+
+          return searchableText.includes(
+            normalizedSearch
+          );
+        }
+      );
+    }, [
+      receipts,
+      searchTerm,
+    ]);
+
+  const downloadReceipt = async (
+    receipt
+  ) => {
+    setDownloadingOrderId(
+      receipt.id
+    );
+
+    setPageError("");
+    setPageMessage("");
+
+    try {
+      const document =
+        await receiptService.downloadReceipt(
+          receipt.id
+        );
+
+      const url =
+        URL.createObjectURL(document);
+
+      const anchor =
+        window.document.createElement(
+          "a"
+        );
+
+      anchor.href = url;
+
+      anchor.download =
+        `${receipt.receiptNumber || receipt.orderNumber}.pdf`;
+
+      window.document.body.appendChild(
+        anchor
+      );
+
+      anchor.click();
+      anchor.remove();
+
+      URL.revokeObjectURL(url);
+
+      setPageMessage(
+        `${receipt.receiptNumber || receipt.orderNumber} has been downloaded.`
+      );
+    } catch (error) {
+      setPageError(error.message);
+    } finally {
+      setDownloadingOrderId(null);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <section
+        className="receipts-v2-loading"
+        role="status"
+        aria-live="polite"
+      >
+        <span
+          className="receipts-v2-spinner"
+          aria-hidden="true"
+        />
+
+        <h1>Loading your receipts</h1>
+
+        <p>
+          We are retrieving your completed
+          SkillVault payment records.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <main className="receipts-v2-page">
+      {pageError && (
+        <div
+          className="receipts-v2-message is-error"
+          role="alert"
+        >
+          <FiRefreshCcw aria-hidden="true" />
+
+          <div>
+            <strong>
+              Something needs attention
+            </strong>
+
+            <span>{pageError}</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setPageError("")}
+            aria-label="Dismiss error"
+          >
+            <FiX aria-hidden="true" />
+          </button>
+        </div>
+      )}
+
+      {pageMessage && (
+        <div
+          className="receipts-v2-message is-success"
+          role="status"
+        >
+          <FiCheckCircle aria-hidden="true" />
+
+          <div>
+            <strong>Receipt ready</strong>
+            <span>{pageMessage}</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setPageMessage("")}
+            aria-label="Dismiss message"
+          >
+            <FiX aria-hidden="true" />
+          </button>
+        </div>
+      )}
+
+      <section className="receipts-v2-hero">
         <div>
           <span>Receipts</span>
-
           <h1>Your payment history</h1>
 
           <p>
-            View your SkillVault purchases, payment confirmations, and receipts
-            for all resources bought on your account.
+            Review completed purchases,
+            M-Pesa confirmations, and downloadable
+            receipts linked to your SkillVault account.
           </p>
         </div>
 
         <Link to="/resources">
-          Buy More Resources
-          <FiArrowRight />
+          Buy more resources
+          <FiArrowRight aria-hidden="true" />
         </Link>
-      </div>
+      </section>
 
-      <div className="receipts-summary-row">
-        <div className="receipts-summary-card">
-          <FiFileText />
+      <section
+        className="receipts-v2-summary"
+        aria-label="Receipt summary"
+      >
+        <article className="is-featured">
+          <span>
+            <FiCreditCard aria-hidden="true" />
+          </span>
 
           <div>
-            <span>{receipts.length}</span>
-            <p>Total receipts</p>
+            <small>Total paid</small>
+            <strong>
+              {formatMoney(summary.totalSpent)}
+            </strong>
+
+            <p>
+              Confirmed value across completed
+              SkillVault purchases.
+            </p>
           </div>
-        </div>
+        </article>
 
-        <div className="receipts-summary-card">
-          <FiCreditCard />
+        <article>
+          <span>
+            <FiFileText aria-hidden="true" />
+          </span>
 
           <div>
-            <span>KSh {totalSpent.toLocaleString()}</span>
-            <p>Total spent</p>
+            <small>Total receipts</small>
+            <strong>
+              {summary.totalReceipts}
+            </strong>
           </div>
-        </div>
+        </article>
 
-        <div className="receipts-summary-card">
-          <FiCheckCircle />
+        <article>
+          <span>
+            <FiCheckCircle aria-hidden="true" />
+          </span>
 
           <div>
-            <span>Paid</span>
-            <p>All orders completed</p>
+            <small>Paid orders</small>
+            <strong>
+              {summary.paidCount}
+            </strong>
           </div>
-        </div>
-      </div>
+        </article>
 
-      <div className="receipts-panel">
-        <div className="receipts-panel-header">
+        <article>
+          <span>
+            <FiRefreshCcw aria-hidden="true" />
+          </span>
+
           <div>
-            <span>Transaction Records</span>
+            <small>Refunded orders</small>
+            <strong>
+              {summary.refundedCount}
+            </strong>
+          </div>
+        </article>
+      </section>
+
+      <section className="receipts-v2-panel">
+        <div className="receipts-v2-panel-header">
+          <div>
+            <span>Transaction records</span>
             <h2>Recent receipts</h2>
+
+            <p>
+              Showing {filteredReceipts.length} of{" "}
+              {receipts.length} receipts
+            </p>
           </div>
 
-          <label className="receipts-search">
-            <FiSearch />
-            <input type="search" placeholder="Search receipt..." />
-          </label>
-        </div>
+          <div className="receipts-v2-tools">
+            <label className="receipts-v2-search">
+              <FiSearch aria-hidden="true" />
 
-        <div className="receipts-table">
-          <div className="receipts-table-head">
-            <span>Receipt</span>
-            <span>Resource</span>
-            <span>Date</span>
-            <span>Method</span>
-            <span>Amount</span>
-            <span>Status</span>
-            <span>Action</span>
-          </div>
+              <input
+                type="search"
+                placeholder="Search receipt, M-Pesa reference, resource..."
+                value={searchTerm}
+                onChange={(event) =>
+                  setSearchTerm(event.target.value)
+                }
+              />
 
-          {receipts.map((receipt) => (
-            <article className="receipts-row" key={receipt.id}>
-              <div className="receipt-id-block">
-                <strong>{receipt.id}</strong>
-                <small>SkillVault receipt</small>
-              </div>
-
-              <div className="receipt-resource">
-                <img src={receipt.resource.image} alt={receipt.resource.title} />
-
-                <div>
-                  <strong>{receipt.resource.title}</strong>
-                  <small>
-                    {receipt.resource.category} / {receipt.resource.type}
-                  </small>
-                </div>
-              </div>
-
-              <span>{receipt.date}</span>
-
-              <span>{receipt.method}</span>
-
-              <strong>KSh {receipt.amount.toLocaleString()}</strong>
-
-              <span className="receipt-status">
-                <FiCheckCircle />
-                {receipt.status}
-              </span>
-
-              <div className="receipt-actions">
-                <Link to={`/product/${receipt.resource.slug}`}>
-                  <FiEye />
-                  View
-                </Link>
-
-                <button type="button">
-                  <FiDownload />
-                  Receipt
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  aria-label="Clear search"
+                >
+                  <FiX aria-hidden="true" />
                 </button>
-              </div>
-            </article>
-          ))}
+              )}
+            </label>
+
+            <button
+              type="button"
+              className="receipts-v2-refresh"
+              onClick={loadReceipts}
+              title="Refresh receipts"
+            >
+              <FiRefreshCcw aria-hidden="true" />
+              Refresh
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="receipts-note">
+        {filteredReceipts.length > 0 ? (
+          <div className="receipts-v2-table-wrap">
+            <table className="receipts-v2-table">
+              <thead>
+                <tr>
+                  <th scope="col">Receipt</th>
+                  <th scope="col">Resource</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Method</th>
+                  <th scope="col">Amount</th>
+                  <th scope="col">Status</th>
+                  <th
+                    scope="col"
+                    className="receipts-v2-actions-heading"
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredReceipts.map(
+                  (receipt) => {
+                    const firstItem =
+                      receipt.items?.[0];
+
+                    const additionalItems =
+                      Math.max(
+                        (
+                          receipt.items?.length ||
+                          0
+                        ) - 1,
+                        0
+                      );
+
+                    return (
+                      <tr key={receipt.id}>
+                        <td data-label="Receipt">
+                          <div className="receipts-v2-id-block">
+                            <strong>
+                              {receipt.receiptNumber}
+                            </strong>
+
+                            <small>
+                              {receipt.mpesaReceiptNumber ||
+                                receipt.orderNumber}
+                            </small>
+                          </div>
+                        </td>
+
+                        <td data-label="Resource">
+                          <div className="receipts-v2-resource">
+                            <ReceiptResourceImage
+                              resource={firstItem}
+                            />
+
+                            <div>
+                              <strong>
+                                {firstItem?.title ||
+                                  "SkillVault order"}
+                              </strong>
+
+                              <small>
+                                {firstItem
+                                  ? `${firstItem.category || "Resource"} / ${firstItem.type || "Digital"}`
+                                  : `${receipt.itemCount || 0} resources`}
+                              </small>
+
+                              {additionalItems > 0 && (
+                                <em>
+                                  +{additionalItems} more
+                                </em>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+
+                        <td data-label="Date">
+                          <span className="receipts-v2-date">
+                            {formatDate(
+                              receipt.date
+                            )}
+                          </span>
+                        </td>
+
+                        <td data-label="Method">
+                          <span className="receipts-v2-method">
+                            {receipt.method}
+                          </span>
+                        </td>
+
+                        <td data-label="Amount">
+                          <strong className="receipts-v2-amount">
+                            {formatMoney(
+                              receipt.amount
+                            )}
+                          </strong>
+                        </td>
+
+                        <td data-label="Status">
+                          <span
+                            className={`receipts-v2-status is-${receipt.status}`}
+                          >
+                            <FiCheckCircle aria-hidden="true" />
+                            {formatStatus(
+                              receipt.status
+                            )}
+                          </span>
+                        </td>
+
+                        <td data-label="Actions">
+                          <div className="receipts-v2-actions">
+                            {firstItem?.slug ? (
+                              <Link
+                                to={`/product/${firstItem.slug}`}
+                              >
+                                <FiEye aria-hidden="true" />
+                                View
+                              </Link>
+                            ) : (
+                              <Link to="/account/library">
+                                <FiEye aria-hidden="true" />
+                                Library
+                              </Link>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                downloadReceipt(
+                                  receipt
+                                )
+                              }
+                              disabled={
+                                downloadingOrderId ===
+                                receipt.id
+                              }
+                            >
+                              {downloadingOrderId ===
+                              receipt.id ? (
+                                <span
+                                  className="receipts-v2-spinner receipts-v2-spinner-small"
+                                  aria-hidden="true"
+                                />
+                              ) : (
+                                <FiDownload aria-hidden="true" />
+                              )}
+
+                              {downloadingOrderId ===
+                              receipt.id
+                                ? "Preparing..."
+                                : "Download"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : receipts.length === 0 ? (
+          <div className="receipts-v2-empty">
+            <span>
+              <FiFileText aria-hidden="true" />
+            </span>
+
+            <h3>No receipts yet</h3>
+
+            <p>
+              Your receipts will appear here after
+              your first completed SkillVault payment.
+            </p>
+
+            <Link to="/resources">
+              Browse resources
+              <FiArrowRight aria-hidden="true" />
+            </Link>
+          </div>
+        ) : (
+          <div className="receipts-v2-empty">
+            <span>
+              <FiSearch aria-hidden="true" />
+            </span>
+
+            <h3>No matching receipts</h3>
+
+            <p>
+              Try another resource title, order number,
+              receipt number, or M-Pesa reference.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setSearchTerm("")}
+            >
+              Clear search
+            </button>
+          </div>
+        )}
+      </section>
+
+      <section className="receipts-v2-security">
+        <span>
+          <FiShield aria-hidden="true" />
+        </span>
+
         <div>
-          <span>Note</span>
+          <small>Receipt security</small>
 
-          <h2>Receipt downloads are demo actions for now</h2>
+          <h2>
+            Receipts are generated from your stored
+            payment records
+          </h2>
 
           <p>
-            Later, this button can generate a proper PDF receipt with customer
-            details, transaction ID, tax details, and SkillVault branding.
+            Each PDF includes the order number,
+            customer details, payment method,
+            M-Pesa reference, purchased resources,
+            savings, total paid, and payment status.
           </p>
         </div>
-      </div>
-    </section>
+      </section>
+    </main>
   );
 }
 

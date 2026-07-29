@@ -2,7 +2,6 @@
   min-height: 100vh;
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
-  background: #f6f4ef;
   font-family: var(--font-main-3);
 }
 
@@ -91,11 +90,11 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: rgba(255, 255, 255, 0.68);
+  color: rgba(255, 255, 255, 0.849);
   text-decoration: none;
   padding: 0 0.85rem;
   font-size: 0.88rem;
-  font-weight: 800;
+  font-weight: 500;
   border: 1px solid transparent;
   transition:
     background 0.2s ease,
@@ -135,7 +134,7 @@
   text-decoration: none;
   padding: 0 0.9rem;
   font-size: 0.76rem;
-  font-weight: 850;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.055em;
   cursor: pointer;

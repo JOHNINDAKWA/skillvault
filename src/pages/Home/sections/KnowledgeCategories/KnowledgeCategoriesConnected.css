@@ -1,0 +1,21 @@
+.home-catalogue-spinner {
+  width: 21px;
+  height: 21px;
+  display: inline-block;
+  border: 3px solid #000000;
+  border-top-color: #996515;
+  border-radius: 50%;
+  animation: home-catalogue-spin 700ms linear infinite;
+}
+
+@keyframes home-catalogue-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-catalogue-spinner {
+    animation-duration: 1.8s;
+  }
+}

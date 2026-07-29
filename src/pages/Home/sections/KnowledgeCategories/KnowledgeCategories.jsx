@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import {
+  FiArrowUpRight,
+  FiChevronLeft,
+  FiChevronRight,
+  FiImage,
+} from "react-icons/fi";
 
 import book1 from "../../../../assets/images/book1.png";
 import book2 from "../../../../assets/images/book2.png";
@@ -10,73 +15,174 @@ import book5 from "../../../../assets/images/book5.png";
 import book6 from "../../../../assets/images/book6.png";
 import book7 from "../../../../assets/images/book7.png";
 
-import "./KnowledgeCategories.css";
+import { useResources } from "../../../../hooks/useResources.js";
 
-const categories = [
-  {
+import "./KnowledgeCategories.css";
+import "./KnowledgeCategoriesConnected.css";
+
+const categoryPresentation = {
+  Career: {
     title: "Career Playbooks",
     image: book1,
-    path: "/resources?category=Career",
   },
-  {
+  Business: {
     title: "Business Toolkits",
     image: book2,
-    path: "/resources?category=Business",
   },
-  {
+  Money: {
     title: "Money Resources",
     image: book3,
-    path: "/resources?category=Money",
   },
-  {
+  Technology: {
     title: "Tech Skills",
     image: book4,
-    path: "/resources?category=Technology",
   },
-  {
+  Education: {
     title: "Student Success",
     image: book5,
-    path: "/resources?category=Education",
   },
-  {
+  Templates: {
     title: "Templates & Planners",
     image: book6,
-    path: "/resources?category=Templates",
   },
-  {
+  AI: {
     title: "AI Productivity",
     image: book7,
-    path: "/resources?category=AI",
   },
-];
+};
+
+function getItemsPerView() {
+  if (window.innerWidth <= 480) {
+    return 1;
+  }
+
+  if (window.innerWidth <= 900) {
+    return 2;
+  }
+
+  return 4;
+}
 
 function KnowledgeCategories() {
+  const { resources, isLoadingResources } = useResources();
+
   const [activeIndex, setActiveIndex] = useState(0);
-  const [itemsPerView, setItemsPerView] = useState(4);
+  const [itemsPerView, setItemsPerView] = useState(getItemsPerView);
   const [transitionEnabled, setTransitionEnabled] = useState(true);
 
+  const categories = useMemo(() => {
+    const groupedResources = new Map();
+
+    for (const resource of resources) {
+      if (!resource.category) {
+        continue;
+      }
+
+      const existing = groupedResources.get(resource.category) || [];
+      existing.push(resource);
+      groupedResources.set(resource.category, existing);
+    }
+
+    return [...groupedResources.entries()]
+      .map(([category, items]) => {
+        const presentation = categoryPresentation[category] || {
+          title: `${category} Resources`,
+          image: book4,
+        };
+
+        const uploadedCover = items.find((item) => Boolean(item.image))?.image;
+
+        return {
+          category,
+          title: presentation.title,
+          image: uploadedCover || presentation.image,
+          count: items.length,
+          path: `/resources?category=${encodeURIComponent(category)}`,
+        };
+      })
+      .sort((first, second) => first.title.localeCompare(second.title));
+  }, [resources]);
+
+  const hasOverflow = categories.length > itemsPerView;
+
   const carouselItems = useMemo(() => {
+    if (!hasOverflow) {
+      return categories;
+    }
+
     return [...categories, ...categories];
+  }, [categories, hasOverflow]);
+
+  const visibleSlide =
+    categories.length > 0 ? (activeIndex % categories.length) + 1 : 0;
+
+  useEffect(() => {
+    const updateItemsPerView = () => {
+      setItemsPerView(getItemsPerView());
+    };
+
+    window.addEventListener("resize", updateItemsPerView);
+
+    return () => {
+      window.removeEventListener("resize", updateItemsPerView);
+    };
   }, []);
 
-  const getItemsPerView = () => {
-    if (window.innerWidth <= 480) {
-      return 1;
+  useEffect(() => {
+    setActiveIndex(0);
+    setTransitionEnabled(true);
+  }, [categories.length, itemsPerView]);
+
+  useEffect(() => {
+    if (!hasOverflow || categories.length === 0) {
+      return undefined;
     }
 
-    if (window.innerWidth <= 900) {
-      return 2;
+    const interval = window.setInterval(() => {
+      setTransitionEnabled(true);
+      setActiveIndex((current) => current + 1);
+    }, 4200);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [hasOverflow, categories.length]);
+
+  useEffect(() => {
+    if (!hasOverflow || activeIndex !== categories.length) {
+      return undefined;
     }
 
-    return 4;
-  };
+    const resetTimer = window.setTimeout(() => {
+      setTransitionEnabled(false);
+      setActiveIndex(0);
+
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          setTransitionEnabled(true);
+        });
+      });
+    }, 760);
+
+    return () => {
+      window.clearTimeout(resetTimer);
+    };
+  }, [activeIndex, categories.length, hasOverflow]);
 
   const nextSlide = () => {
+    if (!hasOverflow) {
+      return;
+    }
+
     setTransitionEnabled(true);
     setActiveIndex((current) => current + 1);
   };
 
   const previousSlide = () => {
+    if (!hasOverflow) {
+      return;
+    }
+
     if (activeIndex === 0) {
       setTransitionEnabled(false);
       setActiveIndex(categories.length);
@@ -95,107 +201,148 @@ function KnowledgeCategories() {
     setActiveIndex((current) => current - 1);
   };
 
-  useEffect(() => {
-    const updateItemsPerView = () => {
-      setItemsPerView(getItemsPerView());
-    };
-
-    updateItemsPerView();
-
-    window.addEventListener("resize", updateItemsPerView);
-
-    return () => {
-      window.removeEventListener("resize", updateItemsPerView);
-    };
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      nextSlide();
-    }, 4200);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (activeIndex === categories.length) {
-      const resetTimer = setTimeout(() => {
-        setTransitionEnabled(false);
-        setActiveIndex(0);
-
-        window.requestAnimationFrame(() => {
-          window.requestAnimationFrame(() => {
-            setTransitionEnabled(true);
-          });
-        });
-      }, 760);
-
-      return () => clearTimeout(resetTimer);
-    }
-
-    return undefined;
-  }, [activeIndex]);
-
   return (
-    <section className="knowledge-categories-section">
+    <section
+      className="knowledge-categories-section"
+      aria-labelledby="knowledge-categories-title"
+    >
       <div className="container">
-        <div className="knowledge-heading">
-          <h2>
-            Explore Practical Resources For
-            <br />
-            What You Want To
-            <br />
-            <span>Learn Next?</span>
-          </h2>
-        </div>
+        <div className="knowledge-intro">
+          <div className="knowledge-intro-title">
+            <span className="knowledge-eyebrow">Curated by purpose</span>
 
-        <div className="knowledge-slider">
-          <button
-            type="button"
-            className="knowledge-arrow knowledge-arrow-left"
-            onClick={previousSlide}
-            aria-label="Previous category"
-          >
-            <FiChevronLeft />
-          </button>
-
-          <div className="knowledge-window">
-            <div
-              className={`knowledge-track ${
-                transitionEnabled ? "" : "no-transition"
-              }`}
-              style={{
-                transform: `translateX(calc(-${activeIndex} * ((100% - (var(--knowledge-gap) * (${itemsPerView} - 1))) / ${itemsPerView} + var(--knowledge-gap))))`,
-              }}
-            >
-              {carouselItems.map((item, index) => (
-                <Link
-                  to={item.path}
-                  className="knowledge-item"
-                  key={`${item.title}-${index}`}
-                  style={{
-                    flexBasis: `calc((100% - (var(--knowledge-gap) * (${itemsPerView} - 1))) / ${itemsPerView})`,
-                  }}
-                >
-                  <div className="knowledge-image">
-                    <img src={item.image} alt={item.title} />
-                  </div>
-
-                  <h3>{item.title}</h3>
-                </Link>
-              ))}
-            </div>
+            <h2 id="knowledge-categories-title">
+              Choose the direction you want to grow in next.
+            </h2>
           </div>
 
-          <button
-            type="button"
-            className="knowledge-arrow knowledge-arrow-right"
-            onClick={nextSlide}
-            aria-label="Next category"
-          >
-            <FiChevronRight />
-          </button>
+          <div className="knowledge-intro-note">
+            <p>
+              Browse practical collections built around real skills, useful
+              tools, and knowledge you can apply immediately.
+            </p>
+
+            <Link to="/resources" className="knowledge-view-all">
+              <span>Open the full library</span>
+
+              <span className="knowledge-view-all-icon" aria-hidden="true">
+                <FiArrowUpRight />
+              </span>
+            </Link>
+          </div>
         </div>
+
+        {isLoadingResources && categories.length === 0 && (
+          <div className="knowledge-categories-loading" role="status">
+            <span className="home-catalogue-spinner" aria-hidden="true" />
+            <span>Loading resource categories...</span>
+          </div>
+        )}
+
+        {!isLoadingResources && categories.length === 0 && (
+          <div className="knowledge-categories-empty">
+            <span className="knowledge-empty-icon" aria-hidden="true">
+              <FiImage />
+            </span>
+
+            <h3>Categories are being prepared</h3>
+
+            <p>
+              Published resource categories will appear here automatically.
+            </p>
+          </div>
+        )}
+
+        {categories.length > 0 && (
+          <div className="knowledge-slider">
+            <div className="knowledge-window">
+              <div
+                className={`knowledge-track ${
+                  transitionEnabled ? "" : "no-transition"
+                }`}
+                style={{
+                  transform: hasOverflow
+                    ? `translateX(calc(-${activeIndex} * ((100% - (var(--knowledge-gap) * (${itemsPerView} - 1))) / ${itemsPerView} + var(--knowledge-gap))))`
+                    : "translateX(0)",
+                }}
+              >
+                {carouselItems.map((item, index) => (
+                  <Link
+                    to={item.path}
+                    className="knowledge-item"
+                    key={`${item.category}-${index}`}
+                    style={{
+                      flexBasis: `calc((100% - (var(--knowledge-gap) * (${itemsPerView} - 1))) / ${itemsPerView})`,
+                    }}
+                  >
+                    <div className="knowledge-image">
+                      <img src={item.image} alt={item.title} />
+
+                      <span className="knowledge-resource-count">
+                        {item.count} resource{item.count === 1 ? "" : "s"}
+                      </span>
+                    </div>
+
+                    <div className="knowledge-item-content">
+                      <span className="knowledge-item-category">
+                        {item.category}
+                      </span>
+
+                      <h3>{item.title}</h3>
+
+                      <span className="knowledge-item-link">
+                        <span>Explore collection</span>
+
+                        <span
+                          className="knowledge-item-link-icon"
+                          aria-hidden="true"
+                        >
+                          <FiArrowUpRight />
+                        </span>
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {hasOverflow && (
+              <div className="knowledge-controls">
+                <div className="knowledge-progress" aria-hidden="true">
+                  <span className="knowledge-progress-current">
+                    {String(visibleSlide).padStart(2, "0")}
+                  </span>
+
+                  <span className="knowledge-progress-line" />
+
+                  <span className="knowledge-progress-total">
+                    {String(categories.length).padStart(2, "0")}
+                  </span>
+                </div>
+
+                <div className="knowledge-arrow-group">
+                  <button
+                    type="button"
+                    className="knowledge-arrow knowledge-arrow-left"
+                    onClick={previousSlide}
+                    aria-label="Previous category"
+                  >
+                    <FiChevronLeft />
+                  </button>
+
+                  <button
+                    type="button"
+                    className="knowledge-arrow knowledge-arrow-right"
+                    onClick={nextSlide}
+                    aria-label="Next category"
+                  >
+                    <FiChevronRight />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -1,0 +1,14 @@
+.product-wishlist-button.is-wishlisted {
+  border-color: #996515;
+  background: #f2eadc;
+  color: #996515;
+}
+
+.product-wishlist-button.is-wishlisted svg {
+  fill: currentColor;
+}
+
+.product-wishlist-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}

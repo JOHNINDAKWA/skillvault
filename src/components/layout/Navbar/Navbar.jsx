@@ -1,22 +1,25 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import {
-  FiShoppingCart,
-  FiUser,
-  FiMenu,
-  FiX,
-  FiPhone,
-  FiMail,
+  FiArrowUpRight,
   FiHelpCircle,
+  FiMail,
+  FiMenu,
+  FiPhone,
+  FiShoppingBag,
+  FiUser,
+  FiX,
 } from "react-icons/fi";
 
 import Logo from "../../ui/Logo/Logo.jsx";
 import { mainNavLinks } from "../../../data/navLinks.js";
 import { useResources } from "../../../hooks/useResources.js";
+
 import "./Navbar.css";
 
 function Navbar() {
   const { basketCount } = useResources();
+  const location = useLocation();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [navbarIsFixed, setNavbarIsFixed] = useState(false);
@@ -27,10 +30,10 @@ function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setNavbarIsFixed(window.scrollY > 70);
+      setNavbarIsFixed(window.scrollY > 40);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
 
     return () => {
@@ -38,43 +41,81 @@ function Navbar() {
     };
   }, []);
 
+  useEffect(() => {
+    closeMobileMenu();
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      document.body.style.removeProperty("overflow");
+      return undefined;
+    }
+
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closeMobileMenu();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.removeProperty("overflow");
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [mobileMenuOpen]);
+
   return (
-    <header className="site-header">
+    <header className={`site-header ${navbarIsFixed ? "is-scrolled" : ""}`}>
       <div className="top-bar">
         <div className="container top-bar-inner">
-          <div className="top-bar-left">
+          <div className="top-bar-contact">
             <a href="tel:+254790648219">
-              <FiPhone />
-              +254 790 648 219
+              <FiPhone aria-hidden="true" />
+              <span>+254 790 648 219</span>
             </a>
 
             <a href="mailto:support@skillvault.co.ke">
-              <FiMail />
-              support@skillvault.co.ke
+              <FiMail aria-hidden="true" />
+              <span>support@skillvault.co.ke</span>
             </a>
           </div>
 
-          <div className="top-bar-right">
+          <p className="top-bar-message">
+            Practical knowledge for meaningful progress.
+          </p>
+
+          <div className="top-bar-links">
             <Link to="/contact">
-              <FiHelpCircle />
-              Help Center
+              <FiHelpCircle aria-hidden="true" />
+              <span>Help</span>
             </Link>
 
             <Link to="/login">
-              <FiUser />
-              My Account
+              <FiUser aria-hidden="true" />
+              <span>Account</span>
             </Link>
           </div>
         </div>
       </div>
 
-      <div className={`main-navbar ${navbarIsFixed ? "is-fixed" : ""}`}>
+      <div className="main-navbar">
         <div className="container main-navbar-inner">
-          <Logo />
+          <div className="navbar-brand">
+            <Logo />
+          </div>
 
           <nav className="desktop-nav" aria-label="Main navigation">
             {mainNavLinks.map((link) => (
-              <NavLink key={link.label} to={link.path}>
+              <NavLink
+                key={link.label}
+                to={link.path}
+                className={({ isActive }) =>
+                  `desktop-nav-link ${isActive ? "is-active" : ""}`
+                }
+              >
                 {link.label}
               </NavLink>
             ))}
@@ -82,64 +123,145 @@ function Navbar() {
 
           <div className="nav-actions">
             <Link to="/resources" className="browse-guides-btn">
-              Browse Resources
+              <span>Explore Library</span>
+              <FiArrowUpRight aria-hidden="true" />
             </Link>
 
-            <Link to="/cart" className="cart-link" aria-label="Cart">
-              <FiShoppingCart />
+            <Link
+              to="/cart"
+              className="navbar-icon-link cart-link"
+              aria-label={`Shopping cart with ${basketCount} item${
+                basketCount === 1 ? "" : "s"
+              }`}
+            >
+              <FiShoppingBag aria-hidden="true" />
 
-              <span className={basketCount > 0 ? "has-items" : ""}>
-                {basketCount}
-              </span>
+              {basketCount > 0 && (
+                <span className="cart-count" aria-hidden="true">
+                  {basketCount > 99 ? "99+" : basketCount}
+                </span>
+              )}
             </Link>
 
             <Link
               to="/login"
-              className="account-icon-link"
+              className="navbar-icon-link account-icon-link"
               aria-label="My account"
             >
-              <FiUser />
+              <FiUser aria-hidden="true" />
             </Link>
 
             <button
               type="button"
               className="mobile-menu-button"
-              aria-label="Open menu"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation"
               onClick={() => setMobileMenuOpen((current) => !current)}
             >
-              {mobileMenuOpen ? <FiX /> : <FiMenu />}
+              {mobileMenuOpen ? (
+                <FiX aria-hidden="true" />
+              ) : (
+                <FiMenu aria-hidden="true" />
+              )}
             </button>
           </div>
         </div>
       </div>
 
-      {navbarIsFixed && <div className="navbar-spacer" />}
+      <div
+        className={`mobile-menu-layer ${mobileMenuOpen ? "is-open" : ""}`}
+        aria-hidden={!mobileMenuOpen}
+      >
+        <button
+          type="button"
+          className="mobile-menu-backdrop"
+          aria-label="Close menu"
+          tabIndex={mobileMenuOpen ? 0 : -1}
+          onClick={closeMobileMenu}
+        />
 
-      {mobileMenuOpen && (
-        <div className={`mobile-menu ${navbarIsFixed ? "is-fixed-mobile" : ""}`}>
-          <div className="container mobile-menu-inner">
-            {mainNavLinks.map((link) => (
-              <NavLink key={link.label} to={link.path} onClick={closeMobileMenu}>
-                {link.label}
+        <aside
+          id="mobile-navigation"
+          className="mobile-menu"
+          aria-label="Mobile navigation"
+        >
+          <div className="mobile-menu-header">
+            <Logo />
+
+            <button
+              type="button"
+              className="mobile-menu-close"
+              aria-label="Close menu"
+              onClick={closeMobileMenu}
+            >
+              <FiX aria-hidden="true" />
+            </button>
+          </div>
+
+          <nav className="mobile-nav">
+            {mainNavLinks.map((link, index) => (
+              <NavLink
+                key={link.label}
+                to={link.path}
+                className={({ isActive }) =>
+                  `mobile-nav-link ${isActive ? "is-active" : ""}`
+                }
+                onClick={closeMobileMenu}
+              >
+                <span className="mobile-nav-number">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+
+                <span>{link.label}</span>
+
+                <FiArrowUpRight aria-hidden="true" />
               </NavLink>
             ))}
+          </nav>
 
-            <div className="mobile-auth-links">
+          <div className="mobile-menu-actions">
+            <Link
+              to="/resources"
+              className="mobile-library-link"
+              onClick={closeMobileMenu}
+            >
+              Explore the Library
+              <FiArrowUpRight aria-hidden="true" />
+            </Link>
+
+            <div className="mobile-quick-links">
               <Link to="/cart" onClick={closeMobileMenu}>
-                Cart ({basketCount})
+                <FiShoppingBag aria-hidden="true" />
+                <span>Cart</span>
+                <strong>{basketCount}</strong>
               </Link>
 
               <Link to="/contact" onClick={closeMobileMenu}>
-                Help Center
+                <FiHelpCircle aria-hidden="true" />
+                <span>Help Center</span>
               </Link>
 
               <Link to="/login" onClick={closeMobileMenu}>
-                My Account
+                <FiUser aria-hidden="true" />
+                <span>My Account</span>
               </Link>
             </div>
           </div>
-        </div>
-      )}
+
+          <div className="mobile-menu-contact">
+            <a href="tel:+254790648219">
+              <FiPhone aria-hidden="true" />
+              +254 790 648 219
+            </a>
+
+            <a href="mailto:support@skillvault.co.ke">
+              <FiMail aria-hidden="true" />
+              support@skillvault.co.ke
+            </a>
+          </div>
+        </aside>
+      </div>
     </header>
   );
 }

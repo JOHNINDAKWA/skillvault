@@ -1,516 +1,1123 @@
-.admin-orders-page {
+.aov-page {
   display: grid;
-  gap: 1.2rem;
-  font-family: var(--font-main-3);
+  gap: 1.35rem;
+  width: 100%;
+  background: #ffffff;
+  color: #000000;
+  font-family: "Poppins", sans-serif;
 }
 
-.admin-orders-hero {
-  min-height: 230px;
+.aov-hero {
+  min-height: 150px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1.45rem 1.55rem;
   background:
-    linear-gradient(90deg, rgba(17, 16, 14, 0.96), rgba(17, 16, 14, 0.72)),
+    linear-gradient(
+      90deg,
+      rgba(26, 13, 8, 0.94),
+      rgba(26, 13, 8, 0.65)
+    ),
     url("../../../assets/images/bg-banner.png") center / cover no-repeat;
   color: #ffffff;
-  padding: 1.6rem;
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 1.5rem;
 }
 
-.admin-orders-hero span,
-.admin-orders-panel-header span {
+.aov-hero > div {
+  max-width: 760px;
+}
+
+.aov-hero > div > span,
+.aov-panel-header > div > span {
   display: block;
-  margin-bottom: 0.55rem;
-  color: #d2a044;
+  margin-bottom: 0.35rem;
+  color: #d6a753;
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  letter-spacing: 0.13em;
 }
 
-.admin-orders-hero h1 {
+.aov-hero h1 {
   margin: 0;
   color: #ffffff;
-  font-size: clamp(2.4rem, 4vw, 4.7rem);
-  font-weight: 800;
-  line-height: 0.95;
-  letter-spacing: -0.065em;
+  font-size: clamp(1.8rem, 3vw, 2.55rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
 }
 
-.admin-orders-hero p {
-  max-width: 650px;
-  margin: 0.9rem 0 0;
-  color: rgba(255, 255, 255, 0.74);
-  font-size: 0.92rem;
-  line-height: 1.65;
+.aov-hero p {
+  max-width: 680px;
+  margin: 0.55rem 0 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.82rem;
+  line-height: 1.7;
 }
 
-.admin-orders-hero button {
+.aov-export-button {
   min-height: 44px;
-  border: 1px solid #996515;
-  background: #996515;
-  color: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.42rem;
-  padding: 0 1rem;
-  font-family: var(--font-main-3);
-  font-size: 0.72rem;
-  font-weight: 850;
-  text-transform: uppercase;
-  letter-spacing: 0.055em;
-  cursor: pointer;
-  white-space: nowrap;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.admin-orders-hero button:hover {
-  background: #ffffff;
-  color: #996515;
-  transform: translateY(-1px);
-}
-
-.admin-orders-stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.admin-orders-stats article {
-  min-height: 112px;
-  background: #ffffff;
-  border: 1px solid #e8e2dc;
-  padding: 1.1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  transition:
-    border-color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.admin-orders-stats article:hover {
-  border-color: rgba(153, 101, 21, 0.28);
-  transform: translateY(-2px);
-  box-shadow: 0 16px 34px rgba(17, 16, 14, 0.06);
-}
-
-.admin-orders-stats svg {
-  width: 48px;
-  height: 48px;
-  padding: 0.78rem;
-  border-radius: 999px;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 0;
   background: #996515;
   color: #ffffff;
-  flex-shrink: 0;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
 }
 
-.admin-orders-stats strong {
-  display: block;
-  color: #11100e;
-  font-size: 1.22rem;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.admin-orders-stats span {
-  display: block;
-  margin-top: 0.35rem;
-  color: #70685f;
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.admin-orders-panel {
+.aov-export-button:hover:not(:disabled) {
   background: #ffffff;
-  border: 1px solid #e8e2dc;
-  padding: 1.2rem;
+  color: #000000;
+  transform: translateY(-2px);
 }
 
-.admin-orders-panel-header {
+.aov-export-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.aov-message {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  font-size: 0.76rem;
+  line-height: 1.6;
+}
+
+.aov-message-error {
+  background: #000000;
+  color: #ffffff;
+}
+
+.aov-message-success {
+  background: #ffffff;
+  color: #000000;
+}
+
+.aov-message-success > svg {
+  color: #996515;
+}
+
+.aov-message button {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.7rem;
+  border: 0;
+  background: #996515;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.aov-message-success button {
+  width: 34px;
+  padding: 0;
+  background: #000000;
+}
+
+.aov-stats-grid {
+  display: grid;
+  grid-template-columns: 1.25fr repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.aov-stat-card {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: start;
+  gap: 0.8rem;
+  padding: 1.05rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.aov-stat-card-featured {
+  background: #2f1c12;
+  border-color: #2f1c12;
+}
+
+.aov-stat-icon {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #000000;
+  color: #ffffff;
+}
+
+.aov-stat-card-featured .aov-stat-icon {
+  background: #996515;
+}
+
+.aov-stat-card div > span,
+.aov-stat-card div > strong,
+.aov-stat-card div > p {
+  display: block;
+}
+
+.aov-stat-card div > span {
+  color: #000000;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.aov-stat-card div > strong {
+  margin-top: 0.32rem;
+  color: #000000;
+  font-size: clamp(1.45rem, 2.8vw, 2.15rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+}
+
+.aov-stat-card div > p {
+  margin: 0.42rem 0 0;
+  color: #000000;
+  font-size: 0.69rem;
+  line-height: 1.6;
+}
+
+.aov-stat-card-featured div > span,
+.aov-stat-card-featured div > strong,
+.aov-stat-card-featured div > p {
+  color: #ffffff;
+}
+
+.aov-stat-card-featured div > p {
+  opacity: 0.72;
+}
+
+.aov-panel {
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.aov-panel-header {
   display: flex;
-  align-items: end;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 1.5rem;
+  padding: 1.25rem;
 }
 
-.admin-orders-panel-header h2 {
+.aov-panel-header h2 {
   margin: 0;
-  color: #11100e;
+  color: #000000;
   font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: -0.035em;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.025em;
 }
 
-.admin-orders-tools {
+.aov-panel-header p {
+  margin: 0.3rem 0 0;
+  color: #000000;
+  font-size: 0.72rem;
+  line-height: 1.55;
+}
+
+.aov-toolbar {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 0.7rem;
 }
 
-.admin-orders-search,
-.admin-orders-filter {
+.aov-search {
+  min-width: min(350px, 100%);
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0 0.8rem;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+}
+
+.aov-search:focus-within {
+  border-color: #996515;
+  box-shadow: 0 0 0 3px rgba(153, 101, 21, 0.09);
+}
+
+.aov-search > svg {
+  color: #996515;
+}
+
+.aov-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #000000;
+  font-family: inherit;
+  font-size: 0.74rem;
+}
+
+.aov-search input::placeholder {
+  color: #000000;
+  opacity: 0.48;
+}
+
+.aov-search button {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #000000;
+  cursor: pointer;
+}
+
+.aov-status-select {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+}
+
+.aov-status-select select {
   min-height: 42px;
+  padding: 0 2rem 0 0.8rem;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #000000;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.aov-refresh-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.7rem 0.85rem;
+  border: 0;
+  background: #000000;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.aov-refresh-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.aov-status-tabs {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  border: 1px solid #e8e2dc;
-  background: #fbfaf7;
-  color: #70685f;
-  padding: 0 0.8rem;
+  overflow-x: auto;
+  padding: 0 1.25rem 1.1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.09);
 }
 
-.admin-orders-search {
-  min-width: 360px;
-}
-
-.admin-orders-search input,
-.admin-orders-filter select {
-  width: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  color: #11100e;
-  font-family: var(--font-main-3);
-  font-size: 0.84rem;
-  font-weight: 700;
-}
-
-.admin-orders-filter select {
-  cursor: pointer;
-}
-
-.admin-orders-tabs {
-  display: flex;
+.aov-status-tabs button {
+  flex: 0 0 auto;
+  min-height: 34px;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 1rem;
-  scrollbar-width: none;
-}
-
-.admin-orders-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.admin-orders-tabs button {
-  min-height: 38px;
-  border: 1px solid #e8e2dc;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
   background: #ffffff;
-  color: #70685f;
-  padding: 0 0.85rem;
-  font-family: var(--font-main-3);
-  font-size: 0.7rem;
-  font-weight: 850;
-  text-transform: uppercase;
-  letter-spacing: 0.045em;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.admin-orders-tabs button:hover,
-.admin-orders-tabs button.is-active {
-  background: #996515;
-  color: #ffffff;
-  border-color: #996515;
-}
-
-.admin-orders-table {
-  display: grid;
-}
-
-.admin-orders-table-head,
-.admin-order-item {
-  display: grid;
-  grid-template-columns:
-    minmax(210px, 1.05fr)
-    minmax(280px, 1.45fr)
-    minmax(135px, 0.65fr)
-    minmax(95px, 0.45fr)
-    minmax(105px, 0.5fr)
-    minmax(112px, 0.55fr)
-    minmax(108px, 0.45fr);
-  gap: 0.9rem;
-  align-items: center;
-}
-
-.admin-orders-table-head {
-  min-height: 44px;
-  background: #fbfaf7;
-  color: #70685f;
-  padding: 0 1rem;
+  color: #000000;
+  font-family: inherit;
   font-size: 0.68rem;
-  font-weight: 850;
-  text-transform: uppercase;
-  letter-spacing: 0.055em;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.admin-order-item {
-  padding: 1rem;
-  border-bottom: 1px solid #e8e2dc;
-}
-
-.admin-order-item:last-child {
-  border-bottom: none;
-}
-
-.admin-order-customer {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.admin-order-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
-  background: #f2eadc;
-  color: #996515;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-
-.admin-order-avatar svg {
-  width: 18px;
-  height: 18px;
-}
-
-.admin-order-customer div,
-.admin-order-resource div,
-.admin-order-mpesa {
-  min-width: 0;
-}
-
-.admin-order-customer strong,
-.admin-order-resource strong,
-.admin-order-mpesa strong,
-.admin-order-item > strong {
-  display: block;
-  color: #11100e;
-  font-size: 0.84rem;
-  font-weight: 850;
-  line-height: 1.25;
-}
-
-.admin-order-customer small,
-.admin-order-resource small,
-.admin-order-mpesa small {
-  display: block;
-  margin-top: 0.18rem;
-  color: #70685f;
-  font-size: 0.7rem;
-  font-weight: 650;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-}
-
-.admin-order-resource {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.admin-order-resource img {
-  width: 54px;
-  height: 60px;
-  object-fit: cover;
-  background: #f1eee8;
-  flex-shrink: 0;
-}
-
-.admin-order-resource strong {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.admin-order-item > span {
-  color: #11100e;
-  font-size: 0.78rem;
-  font-weight: 750;
-}
-
-.admin-order-status {
-  width: fit-content;
-  min-height: 30px;
+.aov-status-tabs button strong {
+  min-width: 22px;
+  min-height: 22px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.34rem;
-  padding: 0 0.62rem;
-  font-size: 0.64rem;
-  font-style: normal;
-  font-weight: 850;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.06);
+  font-size: 0.62rem;
 }
 
-.admin-order-status-paid {
-  background: #f2eadc;
+.aov-status-tabs button.is-active {
+  background: #996515;
+  border-color: #996515;
+  color: #ffffff;
+}
+
+.aov-status-tabs button.is-active strong {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.aov-table-wrap {
+  width: calc(100% - 2rem);
+  margin: 0 1rem 1rem;
+  overflow-x: visible;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  box-sizing: border-box;
+}
+
+.aov-table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.aov-table thead {
+  background: #f7f5f1;
+}
+
+.aov-table th {
+  padding: 0.85rem 0.8rem;
+  color: #000000;
+  font-size: 0.67rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.aov-table th:nth-child(1) {
+  width: 23%;
+}
+
+.aov-table th:nth-child(2) {
+  width: 22%;
+}
+
+.aov-table th:nth-child(3) {
+  width: 10%;
+}
+
+.aov-table th:nth-child(4) {
+  width: 11%;
+}
+
+.aov-table th:nth-child(5) {
+  width: 10%;
+}
+
+.aov-table th:nth-child(6) {
+  width: 13%;
+}
+
+.aov-table th:nth-child(7) {
+  width: 11%;
+}
+
+.aov-table td {
+  padding: 0.95rem 0.8rem;
+  color: #000000;
+  font-size: 0.72rem;
+  line-height: 1.55;
+  vertical-align: middle;
+  border-top: 1px solid rgba(0, 0, 0, 0.075);
+}
+
+.aov-table tbody tr {
+  background: #ffffff;
+  transition: background-color 180ms ease;
+}
+
+.aov-table tbody tr:hover {
+  background: #fcfaf6;
+}
+
+.aov-customer-cell,
+.aov-resource-cell {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.aov-avatar,
+.aov-resource-placeholder {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f2ec;
   color: #996515;
 }
 
-.admin-order-status-pending {
-  background: #fff3d9;
-  color: #9a6a12;
+.aov-resource-cell img {
+  width: 44px;
+  height: 54px;
+  display: block;
+  object-fit: cover;
 }
 
-.admin-order-status-failed {
-  background: #f7e6df;
-  color: #8f3f20;
+.aov-customer-cell > div,
+.aov-resource-cell > div {
+  min-width: 0;
 }
 
-.admin-order-status-refunded {
-  background: #eeeeee;
-  color: #4c4945;
+.aov-customer-cell strong,
+.aov-resource-cell strong {
+  display: block;
+  overflow: hidden;
+  color: #000000;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.admin-order-actions {
+.aov-customer-cell div > span,
+.aov-resource-cell div > span {
+  display: block;
+  overflow: hidden;
+  margin-top: 0.18rem;
+  color: #000000;
+  font-size: 0.66rem;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aov-customer-cell em {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 0.35rem;
+  padding: 0.32rem 0.45rem;
+  background: rgba(153, 101, 21, 0.11);
+  color: #70480f;
+  font-size: 0.6rem;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.aov-amount {
+  color: #000000;
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.aov-status,
+.aov-account {
+  min-height: 31px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.58rem;
+  font-size: 0.64rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.aov-status-paid {
+  background: rgba(153, 101, 21, 0.12);
+  color: #70480f;
+}
+
+.aov-status-pending,
+.aov-status-started,
+.aov-status-details_captured {
+  background: rgba(0, 0, 0, 0.07);
+  color: #000000;
+}
+
+.aov-status-failed,
+.aov-status-abandoned {
+  background: #000000;
+  color: #ffffff;
+}
+
+.aov-status-refunded {
+  background: #f3eee5;
+  color: #5e3c0c;
+}
+
+.aov-account {
+  background: rgba(0, 0, 0, 0.06);
+  color: #000000;
+}
+
+.aov-account.is-linked {
+  background: rgba(153, 101, 21, 0.12);
+  color: #70480f;
+}
+
+.aov-date {
+  color: #000000;
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+
+.aov-actions-heading {
+  text-align: right !important;
+}
+
+.aov-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.4rem;
 }
 
-.admin-order-actions a,
-.admin-order-actions button {
+.aov-action-button {
   width: 34px;
   height: 34px;
-  border: 1px solid #e8e2dc;
-  background: #ffffff;
-  color: #11100e;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  color: #000000;
   text-decoration: none;
   cursor: pointer;
-  flex-shrink: 0;
   transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
 }
 
-.admin-order-actions a:hover,
-.admin-order-actions button:hover {
-  background: #996515;
+.aov-action-button:hover:not(:disabled) {
+  background: #000000;
   color: #ffffff;
-  border-color: #996515;
   transform: translateY(-1px);
 }
 
-.admin-orders-empty {
-  min-height: 260px;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  text-align: center;
-  background: #fbfaf7;
-  border: 1px dashed #d8cec1;
-  margin-top: 1rem;
+.aov-action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.aov-loading,
+.aov-empty {
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
   padding: 2rem;
+  text-align: center;
 }
 
-.admin-orders-empty h3 {
-  margin: 0;
-  color: #11100e;
-  font-size: 1.2rem;
-  font-weight: 850;
+.aov-spinner {
+  width: 28px;
+  height: 28px;
+  display: inline-block;
+  border: 3px solid rgba(0, 0, 0, 0.18);
+  border-top-color: #996515;
+  border-radius: 50%;
+  animation: aov-spin 700ms linear infinite;
 }
 
-.admin-orders-empty p {
-  margin: 0.6rem 0 0;
-  color: #70685f;
-  font-size: 0.9rem;
+.aov-spinner-small {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
 }
 
-@media (max-width: 1250px) {
-  .admin-orders-table-head {
-    display: none;
+.aov-loading strong {
+  margin-top: 0.9rem;
+  color: #000000;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.aov-loading p,
+.aov-empty p {
+  margin: 0.35rem 0 0;
+  color: #000000;
+  font-size: 0.72rem;
+  line-height: 1.65;
+}
+
+.aov-empty > svg {
+  color: #996515;
+  font-size: 1.6rem;
+}
+
+.aov-empty h3 {
+  margin: 0.8rem 0 0;
+  color: #000000;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.aov-empty button {
+  min-height: 40px;
+  margin-top: 1rem;
+  padding: 0.65rem 0.85rem;
+  border: 0;
+  background: #996515;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.is-spinning {
+  animation: aov-spin 700ms linear infinite;
+}
+
+@keyframes aov-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.aov-export-button:focus-visible,
+.aov-message button:focus-visible,
+.aov-search button:focus-visible,
+.aov-refresh-button:focus-visible,
+.aov-status-tabs button:focus-visible,
+.aov-action-button:focus-visible,
+.aov-empty button:focus-visible {
+  outline: 3px solid #996515;
+  outline-offset: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  padding: 0;
+  margin: -1px;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 1180px) {
+  .aov-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .admin-order-item {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-    gap: 1rem;
-    align-items: start;
-    background: #fbfaf7;
-    border: 1px solid #e8e2dc;
-    margin-bottom: 0.8rem;
+  .aov-panel-header {
+    flex-direction: column;
   }
 
-  .admin-order-item:last-child {
-    margin-bottom: 0;
-  }
-
-  .admin-order-mpesa,
-  .admin-order-item > strong,
-  .admin-order-status,
-  .admin-order-item > span,
-  .admin-order-actions {
-    grid-column: auto;
-  }
-
-  .admin-order-actions {
+  .aov-toolbar {
+    width: 100%;
     justify-content: flex-start;
   }
 }
 
-@media (max-width: 1180px) {
-  .admin-orders-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .admin-orders-panel-header {
+@media (max-width: 860px) {
+  .aov-hero {
+    min-height: 138px;
     align-items: flex-start;
     flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.85rem;
   }
 
-  .admin-orders-tools {
+  .aov-hero p {
+    display: none;
+  }
+
+  .aov-search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .aov-table {
+    min-width: 0;
+    table-layout: auto;
+  }
+
+  .aov-table thead {
+    display: none;
+  }
+
+  .aov-table,
+  .aov-table tbody,
+  .aov-table tr,
+  .aov-table td {
+    display: block;
     width: 100%;
   }
 
-  .admin-orders-search {
-    flex: 1;
-    min-width: 0;
+  .aov-table tbody {
+    display: grid;
+    gap: 0.9rem;
+    padding: 0.9rem;
+  }
+
+  .aov-table tbody tr {
+    padding: 0.9rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .aov-table td {
+    display: grid;
+    grid-template-columns: 130px minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
+    padding: 0.65rem 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
+  }
+
+  .aov-table td:first-child {
+    display: block;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .aov-table td::before {
+    content: attr(data-label);
+    color: #000000;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .aov-table td:first-child::before {
+    display: none;
+  }
+
+  .aov-actions {
+    justify-content: flex-start;
   }
 }
 
-@media (max-width: 760px) {
-  .admin-orders-hero {
-    align-items: flex-start;
-    flex-direction: column;
+@media (max-width: 560px) {
+  .aov-page {
+    gap: 1rem;
   }
 
-  .admin-orders-stats {
+  .aov-hero {
+    min-height: 126px;
+    padding: 1.1rem;
+  }
+
+  .aov-hero h1 {
+    font-size: 1.65rem;
+  }
+
+  .aov-stats-grid {
     grid-template-columns: 1fr;
   }
 
-  .admin-orders-tools {
+  .aov-panel-header,
+  .aov-status-tabs {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .aov-toolbar {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
-  .admin-orders-search,
-  .admin-orders-filter {
+  .aov-search {
+    grid-column: 1 / -1;
+  }
+
+  .aov-table td {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .aov-customer-cell,
+  .aov-resource-cell {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .aov-avatar,
+  .aov-resource-placeholder {
+    width: 44px;
+    height: 44px;
+  }
+
+  .aov-resource-cell img {
+    width: 44px;
+    height: 54px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aov-export-button,
+  .aov-table tbody tr,
+  .aov-action-button {
+    transition: none;
+  }
+
+  .aov-spinner,
+  .is-spinning {
+    animation-duration: 1.8s;
+  }
+}
+
+
+/* Restrained classic table refinements */
+
+.aov-amount {
+  width: fit-content;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.42rem 0.58rem;
+  background: #eef7f1;
+  color: #245f3d;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.aov-customer-cell em {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  padding: 0;
+  background: transparent;
+  color: #28715b;
+  font-size: 0.61rem;
+  font-weight: 600;
+}
+
+.aov-customer-cell em::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  display: inline-block;
+  border-radius: 50%;
+  background: #4d9a78;
+}
+
+.aov-status {
+  border-radius: 5px;
+}
+
+.aov-status-paid {
+  background: #eef7f1;
+  color: #245f3d;
+}
+
+.aov-status-pending,
+.aov-status-started,
+.aov-status-details_captured {
+  background: #faf4e7;
+  color: #805719;
+}
+
+.aov-status-failed {
+  background: #f9eded;
+  color: #8c3939;
+}
+
+.aov-status-abandoned {
+  background: #f1f1f1;
+  color: #555555;
+}
+
+.aov-status-refunded {
+  background: #edf2f8;
+  color: #365b81;
+}
+
+.aov-account {
+  border-radius: 5px;
+  background: #f2f2f2;
+  color: #555555;
+}
+
+.aov-account.is-linked {
+  background: #edf2f8;
+  color: #365b81;
+}
+
+.aov-actions {
+  width: fit-content;
+  margin-left: auto;
+  gap: 0.15rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
+.aov-action-button,
+.aov-action-view,
+.aov-action-receipt,
+.aov-action-refresh {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #5d5d5d;
+  box-shadow: none;
+}
+
+.aov-action-button:hover:not(:disabled),
+.aov-action-view:hover:not(:disabled),
+.aov-action-receipt:hover:not(:disabled),
+.aov-action-refresh:hover:not(:disabled) {
+  background: transparent;
+  color: #996515;
+  transform: translateY(-1px);
+}
+
+.aov-action-button:disabled {
+  background: transparent;
+  color: #b8b8b8;
+  opacity: 1;
+}
+
+.aov-table tbody tr:hover .aov-amount {
+  background: #e7f3eb;
+}
+
+@media (max-width: 1100px) {
+  .aov-table {
+    min-width: 0;
+    table-layout: auto;
+  }
+
+  .aov-table thead {
+    display: none;
+  }
+
+  .aov-table,
+  .aov-table tbody,
+  .aov-table tr,
+  .aov-table td {
+    display: block;
     width: 100%;
   }
 
-  .admin-order-item {
-    grid-template-columns: 1fr;
+  .aov-table tbody {
+    display: grid;
+    gap: 0.9rem;
+    padding: 0.9rem;
+  }
+
+  .aov-table tbody tr {
+    padding: 0.9rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .aov-table td {
+    display: grid;
+    grid-template-columns: 130px minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
+    padding: 0.65rem 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
+  }
+
+  .aov-table td:first-child {
+    display: block;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .aov-table td::before {
+    content: attr(data-label);
+    color: #000000;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .aov-table td:first-child::before {
+    display: none;
+  }
+
+  .aov-actions {
+    margin-left: 0;
+  }
+}
+
+
+/* Better horizontal balance inside the orders panel */
+
+.aov-table th:first-child,
+.aov-table td:first-child {
+  padding-left: 1rem;
+}
+
+.aov-table th:last-child,
+.aov-table td:last-child {
+  padding-right: 1rem;
+}
+
+.aov-actions-heading {
+  text-align: center !important;
+}
+
+.aov-actions {
+  margin: 0 auto;
+  justify-content: center;
+}
+
+.aov-customer-cell,
+.aov-resource-cell {
+  gap: 0.65rem;
+}
+
+.aov-customer-cell strong,
+.aov-resource-cell strong {
+  white-space: normal;
+  line-height: 1.35;
+}
+
+.aov-date {
+  display: inline-block;
+  max-width: 100%;
+  line-height: 1.45;
+}
+
+@media (max-width: 1100px) {
+  .aov-table-wrap {
+    width: calc(100% - 1.5rem);
+    margin: 0 0.75rem 0.75rem;
+    border: 0;
+  }
+
+  .aov-actions {
+    margin: 0;
+    justify-content: flex-start;
   }
 }

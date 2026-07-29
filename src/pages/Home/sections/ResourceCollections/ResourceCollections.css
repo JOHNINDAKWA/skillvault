@@ -1,185 +1,364 @@
-.resource-collections-section {
-  padding: 4.8rem 0 5.2rem;
-  background: var(--color-white);
-}
-
-.resource-collections-heading {
-  text-align: center;
-  margin-bottom: 2.7rem;
-}
-
-.resource-collections-heading > span {
-  display: inline-block;
-  margin-bottom: 0.7rem;
-  color: var(--color-hero-red);
-  font-size: 0.76rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.resource-collections-heading h2 {
-  margin: 0;
-  color: var(--color-dark);
-  font-family: var(--font-diatype);
-  font-size: clamp(2rem, 3vw, 3rem);
-  font-weight: 700;
-  line-height: 1.16;
-  letter-spacing: -0.035em;
-}
-
-.resource-collections-grid {
-  display: grid;
-  grid-template-columns: 1.05fr 1fr 1fr;
-  grid-template-rows: repeat(2, 260px);
-  gap: 1.45rem;
-}
-
-.resource-collection-card {
-  position: relative;
-  display: block;
+.svc-collections {
+  width: 100%;
   overflow: hidden;
-  background: #ebe8e4;
-  color: var(--color-dark);
+  background: #ffffff;
+  padding: clamp(2.2rem, 3vw, 3.2rem) 0;
+}
+
+.svc-collections-container {
+  width: min(var(--container-width, 1200px), calc(100% - 2rem));
+}
+
+.svc-collections-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1.4rem;
+}
+
+.svc-collections-header h2 {
+  margin: 0;
+  color: #000000;
+  font-family: "Poppins", sans-serif;
+  font-size: clamp(1.2rem, 1.8vw, 1.65rem);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.03em;
+}
+
+.svc-collections-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #000000;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1;
   text-decoration: none;
+  transition:
+    color 180ms ease,
+    transform 180ms ease;
 }
 
-.resource-collection-card.is-large {
-  grid-row: span 2;
+.svc-collections-view-all svg {
+  color: #996515;
+  font-size: 0.95rem;
 }
 
-.resource-collection-card img {
+.svc-collections-view-all:hover {
+  color: #996515;
+  transform: translateX(3px);
+}
+
+/*
+  Desktop and laptop:
+  four equal cards in one single horizontal flex line.
+  No wrapping is allowed here.
+*/
+.svc-collections-list {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: stretch;
+  gap: clamp(0.75rem, 1.35vw, 1.15rem);
+  width: 100%;
+}
+
+.svc-collection-card {
+  min-width: 0;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.085);
+  text-decoration: none;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.svc-collection-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.14);
+}
+
+.svc-collection-image {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  aspect-ratio: 1.42 / 1;
+  background: #ffffff;
+}
+
+.svc-collection-image img {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
-  transition:
-    transform 0.5s ease,
-    filter 0.5s ease;
+  object-position: center;
+  transition: transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.resource-collection-card:hover img {
-  transform: scale(1.045);
-  filter: brightness(0.94);
+.svc-collection-card:hover .svc-collection-image img {
+  transform: scale(1.04);
 }
 
-.resource-collection-label {
+.svc-collection-count {
   position: absolute;
-  left: 1.15rem;
-  right: 1.15rem;
-  bottom: 1.1rem;
-  width: fit-content;
-  max-width: calc(100% - 2.3rem);
-  padding: 0.78rem 1rem;
-  background: var(--color-white);
-  color: var(--color-dark);
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.44rem 0.58rem;
+  background: #ffffff;
+  color: #000000;
+  box-shadow: -7px -7px 20px rgba(0, 0, 0, 0.1);
+  font-size: 0.58rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
-.resource-collection-label h3 {
+.svc-collection-count svg {
+  color: #996515;
+  font-size: 0.72rem;
+}
+
+.svc-collection-body {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0.88rem 0.82rem 0.82rem;
+}
+
+.svc-collection-category {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #996515;
+  font-size: 0.55rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.svc-collection-body h3 {
   margin: 0;
-  color: var(--color-dark);
-  font-family: var(--font-diatype);
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.25;
+  color: #000000;
+  font-size: clamp(0.78rem, 0.95vw, 0.92rem);
+  font-weight: 600;
+  line-height: 1.4;
   letter-spacing: -0.02em;
 }
 
-.resource-collection-label p {
-  display: none;
-  margin: 0.4rem 0 0;
-  color: var(--color-muted);
+.svc-collection-body p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0.42rem 0 0;
+  color: #000000;
+  font-size: 0.63rem;
+  font-weight: 400;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.svc-collection-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: auto;
+  padding-top: 0.85rem;
+  color: #000000;
+  font-size: 0.6rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition:
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.svc-collection-action svg {
+  flex: 0 0 auto;
+  color: #996515;
+  font-size: 0.84rem;
+}
+
+.svc-collection-card:hover .svc-collection-action {
+  color: #996515;
+  transform: translateX(2px);
+}
+
+.svc-collection-card:focus-visible,
+.svc-collections-view-all:focus-visible {
+  outline: 3px solid #996515;
+  outline-offset: 4px;
+}
+
+.svc-collections-state {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.085);
+  font-size: 0.76rem;
+  font-weight: 500;
+}
+
+.svc-collections-spinner {
+  width: 21px;
+  height: 21px;
+  display: inline-block;
+  border: 3px solid #000000;
+  border-top-color: #996515;
+  border-radius: 50%;
+  animation: svc-collections-spin 700ms linear infinite;
+}
+
+@keyframes svc-collections-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.svc-collections-empty {
+  flex-direction: column;
+  padding: 1.8rem;
+  text-align: center;
+}
+
+.svc-collections-empty-icon {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.15rem;
+  background: #996515;
+  color: #ffffff;
+  box-shadow: 0 11px 24px rgba(153, 101, 21, 0.22);
+}
+
+.svc-collections-empty h3 {
+  margin: 0;
+  color: #000000;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.svc-collections-empty p {
+  max-width: 440px;
+  margin: 0;
+  color: #000000;
   font-size: 0.74rem;
-  line-height: 1.45;
+  font-weight: 400;
+  line-height: 1.65;
 }
 
-.resource-collection-card:hover .resource-collection-label p {
-  display: block;
-}
-
-.resource-collection-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0) 52%,
-      rgba(0, 0, 0, 0.12) 100%
-    );
-  pointer-events: none;
-}
-
-.resource-collection-label {
-  z-index: 2;
-}
-
-@media (max-width: 1000px) {
-  .resource-collections-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: auto;
+/*
+  Phones and narrow screens:
+  exactly two equal cards per line.
+*/
+@media (max-width: 700px) {
+  .svc-collections {
+    padding: 2.4rem 0;
   }
 
-  .resource-collection-card,
-  .resource-collection-card.is-large {
-    min-height: 300px;
-    grid-row: auto;
-  }
-}
-
-@media (max-width: 640px) {
-  .resource-collections-section {
-    padding: 3.7rem 0 4.2rem;
+  .svc-collections-list {
+    flex-wrap: wrap;
+    gap: 0.8rem;
   }
 
-  .resource-collections-heading {
-    margin-bottom: 2rem;
+  .svc-collection-card {
+    flex: 0 0 calc((100% - 0.8rem) / 2);
+    width: calc((100% - 0.8rem) / 2);
   }
 
-  .resource-collections-heading h2 {
-    font-size: clamp(1.8rem, 8vw, 2.35rem);
+  .svc-collection-image {
+    aspect-ratio: 1.18 / 1;
   }
 
-  .resource-collections-grid {
-    display: flex;
-    gap: 1rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    padding-bottom: 0.7rem;
-    scrollbar-width: none;
+  .svc-collection-body {
+    padding: 0.74rem 0.68rem 0.7rem;
   }
 
-  .resource-collections-grid::-webkit-scrollbar {
-    display: none;
+  .svc-collection-body h3 {
+    font-size: 0.78rem;
   }
 
-  .resource-collection-card,
-  .resource-collection-card.is-large {
-    flex: 0 0 82%;
-    min-height: 330px;
-    scroll-snap-align: start;
+  .svc-collection-body p {
+    font-size: 0.59rem;
+    line-height: 1.5;
   }
 
-  .resource-collection-label {
-    left: 0.9rem;
-    right: 0.9rem;
-    bottom: 0.9rem;
-    max-width: calc(100% - 1.8rem);
-  }
-
-  .resource-collection-label p {
-    display: block;
+  .svc-collection-action {
+    font-size: 0.57rem;
   }
 }
 
-@media (max-width: 420px) {
-  .resource-collection-card,
-  .resource-collection-card.is-large {
-    flex-basis: 88%;
-    min-height: 300px;
+@media (max-width: 430px) {
+  .svc-collections-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-bottom: 1.15rem;
   }
 
-  .resource-collection-label h3 {
-    font-size: 0.95rem;
+  .svc-collections-list {
+    gap: 0.65rem;
+  }
+
+  .svc-collection-card {
+    flex-basis: calc((100% - 0.65rem) / 2);
+    width: calc((100% - 0.65rem) / 2);
+  }
+
+  .svc-collection-image {
+    aspect-ratio: 1 / 0.92;
+  }
+
+  .svc-collection-body {
+    padding: 0.66rem 0.58rem 0.64rem;
+  }
+
+  .svc-collection-category {
+    font-size: 0.49rem;
+  }
+
+  .svc-collection-body h3 {
+    font-size: 0.72rem;
+  }
+
+  .svc-collection-body p {
+    font-size: 0.55rem;
+    -webkit-line-clamp: 2;
+  }
+
+  .svc-collection-action {
+    padding-top: 0.7rem;
+    font-size: 0.54rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svc-collections-view-all,
+  .svc-collection-card,
+  .svc-collection-image img,
+  .svc-collection-action {
+    transition: none;
+  }
+
+  .svc-collections-spinner {
+    animation-duration: 1.8s;
   }
 }

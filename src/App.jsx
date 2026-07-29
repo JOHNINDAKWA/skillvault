@@ -1,5 +1,18 @@
-import { Routes, Route } from "react-router-dom";
-import { ResourcesProvider } from "./context/ResourcesContext.jsx";
+import {
+  Route,
+  Routes,
+} from "react-router-dom";
+
+import {
+  ResourcesProvider,
+} from "./context/ResourcesContext.jsx";
+
+import {
+  WishlistProvider,
+} from "./context/WishlistContext.jsx";
+
+import GuestRoute from "./components/auth/GuestRoute.jsx";
+import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 
 import PublicLayout from "./components/layout/PublicLayout/PublicLayout.jsx";
 import AccountLayout from "./components/layout/AccountLayout/AccountLayout.jsx";
@@ -13,6 +26,7 @@ import About from "./pages/About/About.jsx";
 import Contact from "./pages/Contact/Contact.jsx";
 import Login from "./pages/Login/Login.jsx";
 import Register from "./pages/Register/Register.jsx";
+import ChangePassword from "./pages/ChangePassword/ChangePassword.jsx";
 import Cart from "./pages/Cart/Cart.jsx";
 import Checkout from "./pages/Checkout/Checkout.jsx";
 
@@ -33,51 +47,214 @@ import AdminResourceManage from "./pages/Admin/AdminResourceManage/AdminResource
 
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import CartNotification from "./components/ui/CartNotification/CartNotification.jsx";
+import WishlistNotification from "./components/ui/WishlistNotification/WishlistNotification.jsx";
 
 import "./App.css";
+
+const ADMIN_ROLES = [
+  "owner",
+  "admin",
+  "support",
+];
 
 function App() {
   return (
     <ResourcesProvider>
-      <ScrollToTop />
+      <WishlistProvider>
+        <ScrollToTop />
 
       <Routes>
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/product/:slug" element={<ProductDetails />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
+        <Route
+          element={
+            <PublicLayout />
+          }
+        >
+          <Route
+            path="/"
+            element={<Home />}
+          />
+
+          <Route
+            path="/resources"
+            element={<Resources />}
+          />
+
+          <Route
+            path="/product/:slug"
+            element={
+              <ProductDetails />
+            }
+          />
+
+          <Route
+            path="/blog"
+            element={<Blog />}
+          />
+
+          <Route
+            path="/about"
+            element={<About />}
+          />
+
+          <Route
+            path="/contact"
+            element={<Contact />}
+          />
+
+          <Route
+            path="/login"
+            element={
+              <GuestRoute>
+                <Login />
+              </GuestRoute>
+            }
+          />
+
+          <Route
+            path="/register"
+            element={
+              <GuestRoute>
+                <Register />
+              </GuestRoute>
+            }
+          />
+
+          <Route
+            path="/change-password"
+            element={
+              <ProtectedRoute
+                allowPasswordChange
+              >
+                <ChangePassword />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/cart"
+            element={<Cart />}
+          />
+
+          <Route
+            path="/checkout"
+            element={<Checkout />}
+          />
         </Route>
 
-        <Route path="/account" element={<AccountLayout />}>
-          <Route index element={<AccountDashboard />} />
-          <Route path="library" element={<MyLibrary />} />
-          <Route path="reader/:slug" element={<Reader />} />
-          <Route path="receipts" element={<Receipts />} />
-          <Route path="wishlist" element={<Wishlist />} />
-          <Route path="profile" element={<Profile />} />
+        <Route
+          path="/account"
+          element={
+            <ProtectedRoute>
+              <AccountLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            index
+            element={
+              <AccountDashboard />
+            }
+          />
+
+          <Route
+            path="library"
+            element={<MyLibrary />}
+          />
+
+          <Route
+            path="reader/:slug"
+            element={<Reader />}
+          />
+
+          <Route
+            path="receipts"
+            element={<Receipts />}
+          />
+
+          <Route
+            path="wishlist"
+            element={<Wishlist />}
+          />
+
+          <Route
+            path="profile"
+            element={<Profile />}
+          />
         </Route>
 
-     <Route path="/admin" element={<AdminLayout />}>
-  <Route index element={<AdminDashboard />} />
-  <Route path="resources" element={<AdminResources />} />
-  <Route path="resources/new" element={<AdminResourceManage />} />
-  <Route path="resources/:slug/edit" element={<AdminResourceManage />} />
-  <Route path="orders" element={<AdminOrders />} />
-  <Route path="customers" element={<AdminCustomers />} />
-  <Route path="analytics" element={<AdminAnalytics />} />
-  <Route path="settings" element={<AdminSettings />} />
-</Route>
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute
+              allowedRoles={
+                ADMIN_ROLES
+              }
+            >
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            index
+            element={
+              <AdminDashboard />
+            }
+          />
 
+          <Route
+            path="resources"
+            element={
+              <AdminResources />
+            }
+          />
+
+          <Route
+            path="resources/new"
+            element={
+              <AdminResourceManage />
+            }
+          />
+
+          <Route
+            path="resources/:slug/edit"
+            element={
+              <AdminResourceManage />
+            }
+          />
+
+          <Route
+            path="orders"
+            element={
+              <AdminOrders />
+            }
+          />
+
+          <Route
+            path="customers"
+            element={
+              <AdminCustomers />
+            }
+          />
+
+          <Route
+            path="analytics"
+            element={
+              <AdminAnalytics />
+            }
+          />
+
+          <Route
+            path="settings"
+            element={
+              <AdminSettings />
+            }
+          />
+        </Route>
       </Routes>
 
-      <CartNotification />
+        <CartNotification />
+        <WishlistNotification />
+      </WishlistProvider>
     </ResourcesProvider>
   );
 }

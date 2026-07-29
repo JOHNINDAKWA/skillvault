@@ -1,308 +1,971 @@
-import { useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import {
   FiCheckCircle,
+  FiClock,
   FiDownload,
   FiEye,
   FiFilter,
   FiMail,
+  FiRefreshCcw,
   FiSearch,
   FiShoppingBag,
-  FiUser,
+  FiTrendingUp,
+  FiUserCheck,
+  FiUserX,
   FiUsers,
+  FiX,
 } from "react-icons/fi";
+
+import { adminCustomerService } from "../../../services/adminCustomerService.js";
 
 import "./AdminCustomers.css";
 
-const adminCustomers = [
-  {
-    id: "SV-CUS-1201",
-    name: "Mary Wanjiku",
-    email: "mary.wanjiku@email.com",
-    phone: "+254 712 440 291",
-    location: "Nairobi",
-    status: "Active",
-    joined: "24 Jun 2026",
-    purchases: 4,
-    spent: 3650,
-  },
-  {
-    id: "SV-CUS-1202",
-    name: "Brian Otieno",
-    email: "brian.otieno@email.com",
-    phone: "+254 701 119 882",
-    location: "Kisumu",
-    status: "Active",
-    joined: "22 Jun 2026",
-    purchases: 2,
-    spent: 1840,
-  },
-  {
-    id: "SV-CUS-1203",
-    name: "Grace Njeri",
-    email: "grace.njeri@email.com",
-    phone: "+254 722 901 331",
-    location: "Nakuru",
-    status: "Active",
-    joined: "19 Jun 2026",
-    purchases: 5,
-    spent: 4920,
-  },
-  {
-    id: "SV-CUS-1204",
-    name: "Kevin Mwangi",
-    email: "kevin.mwangi@email.com",
-    phone: "+254 733 818 020",
-    location: "Thika",
-    status: "New",
-    joined: "16 Jun 2026",
-    purchases: 1,
-    spent: 249,
-  },
-  {
-    id: "SV-CUS-1205",
-    name: "Amina Hassan",
-    email: "amina.hassan@email.com",
-    phone: "+254 710 662 420",
-    location: "Mombasa",
-    status: "Active",
-    joined: "11 Jun 2026",
-    purchases: 3,
-    spent: 2270,
-  },
-  {
-    id: "SV-CUS-1206",
-    name: "Daniel Kiprotich",
-    email: "daniel.kiprotich@email.com",
-    phone: "+254 745 900 114",
-    location: "Eldoret",
-    status: "Inactive",
-    joined: "06 Jun 2026",
-    purchases: 2,
-    spent: 1290,
-  },
-  {
-    id: "SV-CUS-1207",
-    name: "Sarah Mutua",
-    email: "sarah.mutua@email.com",
-    phone: "+254 703 402 891",
-    location: "Machakos",
-    status: "New",
-    joined: "02 Jun 2026",
-    purchases: 1,
-    spent: 499,
-  },
-  {
-    id: "SV-CUS-1208",
-    name: "James Kariuki",
-    email: "james.kariuki@email.com",
-    phone: "+254 711 582 320",
-    location: "Nyeri",
-    status: "Active",
-    joined: "28 May 2026",
-    purchases: 6,
-    spent: 5640,
-  },
+const statusOptions = [
+  ["all", "All"],
+  ["active", "Active"],
+  ["pending", "Pending"],
+  ["suspended", "Suspended"],
+  ["guest", "Guest"],
 ];
 
+function formatMoney(amount) {
+  return `KSh ${Number(amount || 0).toLocaleString("en-US")}`;
+}
+
+function formatDate(value, includeTime = false) {
+  if (!value) {
+    return "Not available";
+  }
+
+  return new Intl.DateTimeFormat(
+    "en-KE",
+    includeTime
+      ? {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        }
+      : {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }
+  ).format(new Date(value));
+}
+
+function statusLabel(status) {
+  return (
+    statusOptions.find(([value]) => value === status)?.[1] ||
+    status
+  );
+}
+
+function getInitials(name) {
+  if (!name?.trim()) {
+    return "SV";
+  }
+
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function escapeCsv(value) {
+  const text = String(value ?? "");
+  return `"${text.replaceAll('"', '""')}"`;
+}
+
+function saveCsv(customers) {
+  const headings = [
+    "Customer",
+    "Email",
+    "Phone",
+    "Account Created",
+    "Profile Status",
+    "Paid Purchases",
+    "Total Paid",
+    "Total Orders",
+    "Checkout Sessions",
+    "Incomplete Checkouts",
+    "Follow-up Allowed",
+    "Joined",
+    "First Seen",
+    "Last Activity",
+    "Last Purchase",
+    "Last Order",
+    "Recent Resources",
+  ];
+
+  const rows = customers.map((customer) =>
+    [
+      customer.name,
+      customer.email,
+      customer.phone,
+      customer.accountCreated ? "Yes" : "No",
+      statusLabel(customer.status),
+      customer.purchaseCount,
+      customer.totalSpent,
+      customer.orderCount,
+      customer.checkoutCount,
+      customer.incompleteCheckouts,
+      customer.followUpAllowed ? "Yes" : "No",
+      customer.joinedAt,
+      customer.firstSeenAt,
+      customer.lastActivityAt,
+      customer.lastPurchaseAt,
+      customer.lastOrderNumber,
+      (customer.recentResources || [])
+        .map((resource) => resource.title)
+        .join(" | "),
+    ]
+      .map(escapeCsv)
+      .join(",")
+  );
+
+  const document = [
+    headings.map(escapeCsv).join(","),
+    ...rows,
+  ].join("\n");
+
+  const blob = new Blob([document], {
+    type: "text/csv;charset=utf-8",
+  });
+
+  const url = URL.createObjectURL(blob);
+  const anchor = window.document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = `skillvault-customers-${new Date()
+    .toISOString()
+    .slice(0, 10)}.csv`;
+
+  window.document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+
+  URL.revokeObjectURL(url);
+}
+
 function AdminCustomers() {
+  const [customers, setCustomers] = useState([]);
+  const [summary, setSummary] = useState({
+    totalCustomers: 0,
+    registeredAccounts: 0,
+    activeAccounts: 0,
+    payingCustomers: 0,
+    totalPurchases: 0,
+    totalValue: 0,
+  });
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeStatus, setActiveStatus] = useState("All");
+  const [activeStatus, setActiveStatus] = useState("all");
+  const [selectedCustomer, setSelectedCustomer] =
+    useState(null);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageError, setPageError] = useState("");
+
+  const loadCustomers = async () => {
+    setIsLoading(true);
+    setPageError("");
+
+    try {
+      const response =
+        await adminCustomerService.listCustomers();
+
+      setCustomers(response.data.customers || []);
+
+      setSummary(
+        response.data.summary || {
+          totalCustomers: 0,
+          registeredAccounts: 0,
+          activeAccounts: 0,
+          payingCustomers: 0,
+          totalPurchases: 0,
+          totalValue: 0,
+        }
+      );
+    } catch (error) {
+      setPageError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCustomers();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedCustomer) {
+      return undefined;
+    }
+
+    const previousOverflow =
+      document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setSelectedCustomer(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow =
+        previousOverflow;
+
+      window.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+    };
+  }, [selectedCustomer]);
 
   const filteredCustomers = useMemo(() => {
-    return adminCustomers.filter((customer) => {
-      const searchValue = searchTerm.toLowerCase();
+    const searchValue = searchTerm
+      .trim()
+      .toLowerCase();
+
+    return customers.filter((customer) => {
+      const searchableResources = (
+        customer.recentResources || []
+      )
+        .map((resource) =>
+          [
+            resource.title,
+            resource.category,
+            resource.type,
+          ]
+            .filter(Boolean)
+            .join(" ")
+        )
+        .join(" ");
+
+      const searchableText = [
+        customer.name,
+        customer.email,
+        customer.phone,
+        customer.lastOrderNumber,
+        searchableResources,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
 
       const matchesSearch =
-        customer.name.toLowerCase().includes(searchValue) ||
-        customer.email.toLowerCase().includes(searchValue) ||
-        customer.phone.toLowerCase().includes(searchValue) ||
-        customer.location.toLowerCase().includes(searchValue);
+        !searchValue ||
+        searchableText.includes(searchValue);
 
       const matchesStatus =
-        activeStatus === "All" || customer.status === activeStatus;
+        activeStatus === "all" ||
+        customer.status === activeStatus;
 
       return matchesSearch && matchesStatus;
     });
-  }, [searchTerm, activeStatus]);
+  }, [customers, searchTerm, activeStatus]);
 
-  const activeCustomers = adminCustomers.filter(
-    (customer) => customer.status === "Active"
-  ).length;
+  const statusCounts = useMemo(() => {
+    return statusOptions.reduce(
+      (result, [value]) => {
+        result[value] =
+          value === "all"
+            ? customers.length
+            : customers.filter(
+                (customer) =>
+                  customer.status === value
+              ).length;
 
-  const totalPurchases = adminCustomers.reduce(
-    (total, customer) => total + customer.purchases,
-    0
-  );
+        return result;
+      },
+      {}
+    );
+  }, [customers]);
 
-  const totalSpent = adminCustomers.reduce(
-    (total, customer) => total + customer.spent,
-    0
-  );
+  const summaryCards = [
+    {
+      label: "Known customers",
+      value: summary.totalCustomers,
+      icon: FiUsers,
+      className: "is-indigo",
+    },
+    {
+      label: "Registered accounts",
+      value: summary.registeredAccounts,
+      icon: FiUserCheck,
+      className: "is-blue",
+    },
+    {
+      label: "Paying customers",
+      value: summary.payingCustomers,
+      icon: FiShoppingBag,
+      className: "is-green",
+    },
+    {
+      label: "Paid purchases",
+      value: summary.totalPurchases,
+      icon: FiCheckCircle,
+      className: "is-orange",
+    },
+  ];
 
   return (
-    <section className="admin-customers-page">
-      <div className="admin-customers-hero">
+    <main className="customers-v2-page">
+      <section className="customers-v2-hero">
         <div>
-          <span>Customer Management</span>
-
+          <span>Customer management</span>
           <h1>Customers</h1>
 
           <p>
-            View customer accounts, contact details, purchase count, and total
-            value.
+            Review customer accounts, guest checkouts,
+            purchases, engagement, and recent activity from
+            one clear workspace.
           </p>
         </div>
 
-        <button type="button">
-          <FiDownload />
-          Export Customers
+        <button
+          type="button"
+          onClick={() => saveCsv(filteredCustomers)}
+          disabled={filteredCustomers.length === 0}
+        >
+          <FiDownload aria-hidden="true" />
+          Export current view
         </button>
-      </div>
+      </section>
 
-      <div className="admin-customers-stats">
-        <article>
-          <FiUsers />
+      {pageError && (
+        <div
+          className="customers-v2-message"
+          role="alert"
+        >
+          <FiRefreshCcw aria-hidden="true" />
+
+          <span>{pageError}</span>
+
+          <button type="button" onClick={loadCustomers}>
+            Try again
+          </button>
+        </div>
+      )}
+
+      <section className="customers-v2-overview">
+        <article className="customers-v2-value-card">
           <div>
-            <strong>{adminCustomers.length}</strong>
-            <span>Total customers</span>
+            <span>Total customer value</span>
+            <strong>
+              {formatMoney(summary.totalValue)}
+            </strong>
+
+            <p>
+              Confirmed value generated across paid customer
+              purchases.
+            </p>
           </div>
+
+          <span>
+            <FiTrendingUp aria-hidden="true" />
+          </span>
         </article>
 
-        <article>
-          <FiCheckCircle />
-          <div>
-            <strong>{activeCustomers}</strong>
-            <span>Active customers</span>
-          </div>
-        </article>
+        <div className="customers-v2-summary-grid">
+          {summaryCards.map((card) => {
+            const Icon = card.icon;
 
-        <article>
-          <FiShoppingBag />
-          <div>
-            <strong>{totalPurchases}</strong>
-            <span>Total purchases</span>
-          </div>
-        </article>
+            return (
+              <article
+                className={`customers-v2-summary-card ${card.className}`}
+                key={card.label}
+              >
+                <span>
+                  <Icon aria-hidden="true" />
+                </span>
 
-        <article>
-          <FiUser />
-          <div>
-            <strong>KSh {totalSpent.toLocaleString()}</strong>
-            <span>Total value</span>
-          </div>
-        </article>
-      </div>
+                <div>
+                  <strong>{card.value}</strong>
+                  <small>{card.label}</small>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
 
-      <div className="admin-customers-panel">
-        <div className="admin-customers-panel-header">
+      <section className="customers-v2-panel">
+        <div className="customers-v2-panel-header">
           <div>
-            <span>Accounts</span>
-            <h2>Customer list</h2>
+            <span>Customer records</span>
+            <h2>Accounts and known guests</h2>
+
+            <p>
+              Showing {filteredCustomers.length} of{" "}
+              {customers.length} customers
+            </p>
           </div>
 
-          <div className="admin-customers-tools">
-            <label className="admin-customers-search">
-              <FiSearch />
+          <div className="customers-v2-tools">
+            <label className="customers-v2-search">
+              <FiSearch aria-hidden="true" />
 
               <input
                 type="search"
-                placeholder="Search customers..."
+                placeholder="Search name, email, phone, order..."
                 value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
+                onChange={(event) =>
+                  setSearchTerm(event.target.value)
+                }
               />
+
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  aria-label="Clear search"
+                >
+                  <FiX aria-hidden="true" />
+                </button>
+              )}
             </label>
 
-            <div className="admin-customers-filter">
-              <FiFilter />
+            <label className="customers-v2-filter">
+              <FiFilter aria-hidden="true" />
 
               <select
                 value={activeStatus}
-                onChange={(event) => setActiveStatus(event.target.value)}
+                onChange={(event) =>
+                  setActiveStatus(event.target.value)
+                }
               >
-                <option value="All">All Status</option>
-                <option value="Active">Active</option>
-                <option value="New">New</option>
-                <option value="Inactive">Inactive</option>
+                {statusOptions.map(([value, label]) => (
+                  <option value={value} key={value}>
+                    {label}
+                  </option>
+                ))}
               </select>
-            </div>
+            </label>
+
+            <button
+              type="button"
+              className="customers-v2-refresh"
+              onClick={loadCustomers}
+              disabled={isLoading}
+            >
+              <FiRefreshCcw
+                className={isLoading ? "is-spinning" : ""}
+                aria-hidden="true"
+              />
+              Refresh
+            </button>
           </div>
         </div>
 
-        <div className="admin-customers-tabs">
-          {["All", "Active", "New", "Inactive"].map((status) => (
+        <div
+          className="customers-v2-tabs"
+          aria-label="Customer status filters"
+        >
+          {statusOptions.map(([value, label]) => (
             <button
               type="button"
-              key={status}
-              className={activeStatus === status ? "is-active" : ""}
-              onClick={() => setActiveStatus(status)}
+              key={value}
+              className={
+                activeStatus === value ? "is-active" : ""
+              }
+              onClick={() => setActiveStatus(value)}
             >
-              {status}
+              <span>{label}</span>
+              <strong>{statusCounts[value] || 0}</strong>
             </button>
           ))}
         </div>
 
-        <div className="admin-customers-table">
-          <div className="admin-customers-table-head">
-            <span>Customer</span>
-            <span>Phone</span>
-            <span>Location</span>
-            <span>Purchases</span>
-            <span>Total Spent</span>
-            <span>Status</span>
-            <span>Joined</span>
-            <span>Actions</span>
+        {isLoading ? (
+          <div
+            className="customers-v2-loading"
+            role="status"
+          >
+            <span
+              className="customers-v2-spinner"
+              aria-hidden="true"
+            />
+
+            <strong>Loading customer records</strong>
+
+            <p>
+              Retrieving accounts, purchases, and recent
+              activity.
+            </p>
           </div>
+        ) : filteredCustomers.length > 0 ? (
+          <div className="customers-v2-table-wrap">
+            <table className="customers-v2-table">
+              <thead>
+                <tr>
+                  <th scope="col">Customer</th>
+                  <th scope="col">Account</th>
+                  <th scope="col">Contact</th>
+                  <th scope="col">Purchases</th>
+                  <th scope="col">Lifetime value</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Last activity</th>
+                  <th
+                    scope="col"
+                    className="customers-v2-actions-heading"
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
 
-          {filteredCustomers.map((customer) => (
-            <article className="admin-customer-row" key={customer.id}>
-              <div className="admin-customer-name">
-                <div className="admin-customer-avatar">
-                  <FiUser />
-                </div>
+              <tbody>
+                {filteredCustomers.map((customer) => (
+                  <tr key={customer.id}>
+                    <td data-label="Customer">
+                      <div className="customers-v2-customer-cell">
+                        <span>
+                          {getInitials(customer.name)}
+                        </span>
 
-                <div>
-                  <strong>{customer.name}</strong>
-                  <small>{customer.email}</small>
-                </div>
-              </div>
+                        <div>
+                          <strong>{customer.name}</strong>
+                          <small>
+                            {customer.email ||
+                              "Email not provided"}
+                          </small>
 
-              <span>{customer.phone}</span>
+                          {customer.followUpAllowed && (
+                            <em>
+                              Follow-up allowed
+                            </em>
+                          )}
+                        </div>
+                      </div>
+                    </td>
 
-              <span>{customer.location}</span>
+                    <td data-label="Account">
+                      <span
+                        className={`customers-v2-account ${
+                          customer.accountCreated
+                            ? "is-registered"
+                            : "is-guest"
+                        }`}
+                      >
+                        {customer.accountCreated ? (
+                          <FiUserCheck aria-hidden="true" />
+                        ) : (
+                          <FiUserX aria-hidden="true" />
+                        )}
 
-              <strong>{customer.purchases}</strong>
+                        {customer.accountCreated
+                          ? "Registered"
+                          : "Guest"}
+                      </span>
+                    </td>
 
-              <strong>KSh {customer.spent.toLocaleString()}</strong>
+                    <td data-label="Contact">
+                      <div className="customers-v2-contact">
+                        <strong>
+                          {customer.phone ||
+                            "No phone number"}
+                        </strong>
 
-              <em
-                className={`admin-customer-status admin-customer-status-${customer.status.toLowerCase()}`}
-              >
-                {customer.status}
-              </em>
+                        <span>
+                          {customer.email ||
+                            "No email address"}
+                        </span>
+                      </div>
+                    </td>
 
-              <span>{customer.joined}</span>
+                    <td data-label="Purchases">
+                      <div className="customers-v2-purchases">
+                        <strong>
+                          {customer.purchaseCount}
+                        </strong>
 
-              <div className="admin-customer-actions">
-                <button type="button" title="View customer">
-                  <FiEye />
-                </button>
+                        <span>
+                          {customer.purchaseCount === 1
+                            ? "purchase"
+                            : "purchases"}
+                        </span>
+                      </div>
+                    </td>
 
-                <button type="button" title="Email customer">
-                  <FiMail />
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
+                    <td data-label="Lifetime value">
+                      <strong className="customers-v2-value">
+                        {formatMoney(
+                          customer.totalSpent
+                        )}
+                      </strong>
+                    </td>
 
-        {filteredCustomers.length === 0 && (
-          <div className="admin-customers-empty">
+                    <td data-label="Status">
+                      <span
+                        className={`customers-v2-status is-${customer.status}`}
+                      >
+                        <span aria-hidden="true" />
+                        {statusLabel(customer.status)}
+                      </span>
+                    </td>
+
+                    <td data-label="Last activity">
+                      <div className="customers-v2-activity">
+                        <FiClock aria-hidden="true" />
+
+                        <span>
+                          {formatDate(
+                            customer.lastActivityAt,
+                            true
+                          )}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td data-label="Actions">
+                      <div className="customers-v2-actions">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedCustomer(customer)
+                          }
+                        >
+                          <FiEye aria-hidden="true" />
+                          <span>View</span>
+                        </button>
+
+                        {customer.email ? (
+                          <a
+                            href={`mailto:${customer.email}`}
+                            className={
+                              !customer.accountCreated &&
+                              !customer.followUpAllowed
+                                ? "needs-consent"
+                                : ""
+                            }
+                            title={
+                              !customer.accountCreated &&
+                              !customer.followUpAllowed
+                                ? "Email exists, but checkout follow-up permission was not recorded."
+                                : "Email customer"
+                            }
+                          >
+                            <FiMail aria-hidden="true" />
+                            <span>Email</span>
+                          </a>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled
+                            aria-label="No email address available"
+                          >
+                            <FiMail aria-hidden="true" />
+                            <span>Email</span>
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="customers-v2-empty">
+            <FiUsers aria-hidden="true" />
+
             <h3>No customers found</h3>
-            <p>Try changing the search term or selected status filter.</p>
+
+            <p>
+              Try changing the search term or selected
+              status filter.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSearchTerm("");
+                setActiveStatus("all");
+              }}
+            >
+              Reset filters
+            </button>
           </div>
         )}
-      </div>
-    </section>
+      </section>
+
+      {selectedCustomer && (
+        <div
+          className="customers-v2-modal-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setSelectedCustomer(null);
+            }
+          }}
+        >
+          <div
+            className="customers-v2-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="customer-detail-title"
+          >
+            <button
+              type="button"
+              className="customers-v2-modal-close"
+              onClick={() => setSelectedCustomer(null)}
+              aria-label="Close customer details"
+            >
+              <FiX aria-hidden="true" />
+            </button>
+
+            <div className="customers-v2-modal-profile">
+              <span>
+                {getInitials(selectedCustomer.name)}
+              </span>
+
+              <div>
+                <small>Customer profile</small>
+
+                <h2 id="customer-detail-title">
+                  {selectedCustomer.name}
+                </h2>
+
+                <p>
+                  {selectedCustomer.email ||
+                    "Email not provided"}
+
+                  {selectedCustomer.phone
+                    ? ` · ${selectedCustomer.phone}`
+                    : ""}
+                </p>
+
+                <div>
+                  <span
+                    className={`customers-v2-account ${
+                      selectedCustomer.accountCreated
+                        ? "is-registered"
+                        : "is-guest"
+                    }`}
+                  >
+                    {selectedCustomer.accountCreated
+                      ? "Registered"
+                      : "Guest"}
+                  </span>
+
+                  <span
+                    className={`customers-v2-status is-${selectedCustomer.status}`}
+                  >
+                    <span aria-hidden="true" />
+                    {statusLabel(
+                      selectedCustomer.status
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="customers-v2-modal-stats">
+              <article>
+                <strong>
+                  {selectedCustomer.purchaseCount}
+                </strong>
+                <span>Paid purchases</span>
+              </article>
+
+              <article>
+                <strong>
+                  {formatMoney(
+                    selectedCustomer.totalSpent
+                  )}
+                </strong>
+                <span>Total paid</span>
+              </article>
+
+              <article>
+                <strong>
+                  {selectedCustomer.checkoutCount}
+                </strong>
+                <span>Checkout sessions</span>
+              </article>
+
+              <article>
+                <strong>
+                  {selectedCustomer.incompleteCheckouts}
+                </strong>
+                <span>Incomplete checkouts</span>
+              </article>
+            </div>
+
+            <div className="customers-v2-modal-body">
+              <section>
+                <div className="customers-v2-modal-section-heading">
+                  <span>Account details</span>
+                  <h3>Customer activity</h3>
+                </div>
+
+                <div className="customers-v2-detail-grid">
+                  <div>
+                    <span>Account</span>
+                    <strong>
+                      {selectedCustomer.accountCreated
+                        ? "Registered account"
+                        : "Guest customer"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>Joined</span>
+                    <strong>
+                      {selectedCustomer.accountCreated
+                        ? formatDate(
+                            selectedCustomer.joinedAt
+                          )
+                        : "No account"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>First seen</span>
+                    <strong>
+                      {formatDate(
+                        selectedCustomer.firstSeenAt
+                      )}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>Last activity</span>
+                    <strong>
+                      {formatDate(
+                        selectedCustomer.lastActivityAt,
+                        true
+                      )}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>Follow-up permission</span>
+                    <strong>
+                      {selectedCustomer.followUpAllowed
+                        ? "Recorded"
+                        : "Not recorded"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>Last order</span>
+                    <strong>
+                      {selectedCustomer.lastOrderNumber ||
+                        "No paid order"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>Last purchase</span>
+                    <strong>
+                      {formatDate(
+                        selectedCustomer.lastPurchaseAt
+                      )}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>Total orders</span>
+                    <strong>
+                      {selectedCustomer.orderCount}
+                    </strong>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <div className="customers-v2-modal-section-heading">
+                  <span>Recent purchases</span>
+                  <h3>Resources bought</h3>
+                </div>
+
+                {selectedCustomer.recentResources?.length >
+                0 ? (
+                  <div className="customers-v2-resource-list">
+                    {selectedCustomer.recentResources.map(
+                      (resource) => (
+                        <article
+                          key={
+                            resource.id ||
+                            resource.slug ||
+                            resource.title
+                          }
+                        >
+                          <span>
+                            <FiShoppingBag aria-hidden="true" />
+                          </span>
+
+                          <div>
+                            <strong>
+                              {resource.title}
+                            </strong>
+
+                            <small>
+                              {resource.category ||
+                                "Resource"}
+
+                              {resource.type
+                                ? ` / ${resource.type}`
+                                : ""}
+                            </small>
+                          </div>
+
+                          <time>
+                            {formatDate(resource.date)}
+                          </time>
+                        </article>
+                      )
+                    )}
+                  </div>
+                ) : (
+                  <div className="customers-v2-no-purchases">
+                    <FiShoppingBag aria-hidden="true" />
+
+                    <p>
+                      No paid resource purchases are recorded
+                      for this customer.
+                    </p>
+                  </div>
+                )}
+              </section>
+            </div>
+
+            <div className="customers-v2-modal-actions">
+              {selectedCustomer.email && (
+                <a
+                  href={`mailto:${selectedCustomer.email}`}
+                >
+                  <FiMail aria-hidden="true" />
+                  Email customer
+                </a>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setSelectedCustomer(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
   );
 }
 

@@ -1,0 +1,112 @@
+.admin-analytics-connected-loading {
+  min-height: 65vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+.admin-analytics-connected-loading h1 {
+  margin: 0;
+  color: #11100e;
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.admin-analytics-connected-loading p {
+  max-width: 560px;
+  margin: 0.7rem 0 0;
+  color: #70685f;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.admin-analytics-connected-spinner {
+  width: 42px;
+  height: 42px;
+  margin-bottom: 1rem;
+  border: 3px solid rgba(153, 101, 21, 0.18);
+  border-top-color: #996515;
+  border-radius: 999px;
+  animation: admin-analytics-connected-spin 0.75s linear infinite;
+}
+
+.admin-analytics-connected-message {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid #efc2bd;
+  background: #fff1ef;
+  color: #9b2c22;
+  padding: 0.75rem 0.9rem;
+}
+
+.admin-analytics-connected-message span {
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.admin-analytics-connected-message button {
+  min-height: 36px;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 0.7rem;
+  font-size: 0.66rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.admin-analytics-empty-chart {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+  border: 1px dashed #d8cec1;
+  background: #fbfaf7;
+  padding: 1.2rem;
+}
+
+.admin-analytics-empty-chart svg {
+  width: 36px;
+  height: 36px;
+  color: #996515;
+}
+
+.admin-analytics-empty-chart p {
+  max-width: 360px;
+  margin: 0.65rem 0 0;
+  color: #70685f;
+  font-size: 0.74rem;
+  line-height: 1.55;
+}
+
+.admin-analytics-hero button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@keyframes admin-analytics-connected-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 620px) {
+  .admin-analytics-connected-message {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

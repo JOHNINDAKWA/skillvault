@@ -1,0 +1,247 @@
+.admin-dashboard-connected-loading {
+  min-height: 65vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+.admin-dashboard-connected-loading h1 {
+  margin: 0;
+  color: #11100e;
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  letter-spacing: -0.045em;
+}
+
+.admin-dashboard-connected-loading p {
+  max-width: 540px;
+  margin: 0.7rem 0 0;
+  color: #70685f;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.admin-dashboard-connected-spinner {
+  width: 42px;
+  height: 42px;
+  margin-bottom: 1rem;
+  border: 3px solid rgba(153, 101, 21, 0.18);
+  border-top-color: #996515;
+  border-radius: 999px;
+  animation: admin-dashboard-connected-spin 0.75s linear infinite;
+}
+
+.admin-dashboard-connected-message {
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid #efc2bd;
+  background: #fff1ef;
+  color: #9b2c22;
+  padding: 0.8rem 0.9rem;
+}
+
+.admin-dashboard-connected-message > svg {
+  width: 20px;
+  height: 20px;
+}
+
+.admin-dashboard-connected-message > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.admin-dashboard-connected-message strong {
+  font-size: 0.78rem;
+}
+
+.admin-dashboard-connected-message span {
+  font-size: 0.72rem;
+  line-height: 1.55;
+}
+
+.admin-dashboard-connected-message button,
+.admin-dashboard-refresh-button {
+  min-height: 38px;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 0.75rem;
+  font-size: 0.66rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.admin-dashboard-primary-link,
+.admin-panel-heading > a {
+  min-height: 44px;
+  border: 1px solid #996515;
+  background: #996515;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  padding: 0 1rem;
+  text-decoration: none;
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+  white-space: nowrap;
+}
+
+.admin-dashboard-primary-link:hover,
+.admin-panel-heading > a:hover {
+  background: #ffffff;
+  color: #996515;
+}
+
+.admin-order-status-connected {
+  width: fit-content;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.6rem;
+  font-size: 0.64rem;
+  font-style: normal;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.admin-order-status-connected-paid {
+  background: #f2eadc;
+  color: #996515;
+}
+
+.admin-order-status-connected-pending {
+  background: #fff3d9;
+  color: #9a6a12;
+}
+
+.admin-order-status-connected-failed,
+.admin-order-status-connected-cancelled {
+  background: #f7e6df;
+  color: #8f3f20;
+}
+
+.admin-order-status-connected-refunded {
+  background: #eeeeee;
+  color: #4c4945;
+}
+
+.admin-dashboard-image-placeholder {
+  width: 58px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  background: #f2eadc;
+  color: #996515;
+}
+
+.admin-dashboard-image-placeholder svg {
+  width: 23px;
+  height: 23px;
+}
+
+.admin-resource-sales {
+  display: grid;
+  justify-items: end;
+  gap: 0.15rem;
+}
+
+.admin-resource-sales p {
+  color: #11100e;
+  font-weight: 800;
+}
+
+.admin-resource-sales span {
+  margin-top: 0;
+  color: #996515;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.admin-dashboard-connected-empty {
+  min-height: 250px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+  border: 1px dashed #d8cec1;
+  background: #fbfaf7;
+  padding: 1.25rem;
+}
+
+.admin-dashboard-connected-empty-small {
+  min-height: 220px;
+}
+
+.admin-dashboard-connected-empty > svg {
+  width: 38px;
+  height: 38px;
+  color: #996515;
+}
+
+.admin-dashboard-connected-empty h3 {
+  margin: 0.7rem 0 0;
+  color: #11100e;
+  font-size: 1rem;
+}
+
+.admin-dashboard-connected-empty p {
+  max-width: 440px;
+  margin: 0.4rem 0 0;
+  color: #70685f;
+  font-size: 0.72rem;
+  line-height: 1.55;
+}
+
+.admin-dashboard-refresh-button {
+  border-color: #e8e2dc;
+  background: #ffffff;
+  color: #11100e;
+}
+
+.admin-dashboard-refresh-button:hover {
+  border-color: #996515;
+  color: #996515;
+}
+
+.admin-health-grid article.admin-health-attention svg {
+  background: #9a6a12;
+}
+
+.admin-health-grid article.admin-health-attention {
+  border-color: #e6d4ad;
+  background: #fff8e8;
+}
+
+@keyframes admin-dashboard-connected-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 700px) {
+  .admin-dashboard-connected-message {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .admin-dashboard-primary-link,
+  .admin-panel-heading > a {
+    width: fit-content;
+  }
+}

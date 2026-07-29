@@ -1,4 +1,9 @@
-import { NavLink, Outlet, Link } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useNavigate,
+} from "react-router-dom";
 import {
   FiBarChart2,
   FiBox,
@@ -8,8 +13,11 @@ import {
   FiShoppingBag,
   FiUsers,
 } from "react-icons/fi";
+import { useState } from "react";
 
+import { useAuth } from "../../../hooks/useAuth.js";
 import Logo from "../../ui/Logo/Logo.jsx";
+
 import "./AdminLayout.css";
 
 const adminLinks = [
@@ -47,16 +55,32 @@ const adminLinks = [
 ];
 
 function AdminLayout() {
+  const navigate = useNavigate();
+  const { logout, isLoggingOut } = useAuth();
+  const [logoutError, setLogoutError] = useState("");
+
+  const handleLogout = async () => {
+    setLogoutError("");
+
+    try {
+      await logout();
+      navigate("/login", { replace: true });
+    } catch (error) {
+      setLogoutError(
+        error.message || "Logout failed. Please try again."
+      );
+    }
+  };
+
   return (
     <div className="admin-layout">
       <aside className="admin-sidebar">
-      <div className="admin-sidebar-top">
-  <Link to="/admin" className="admin-brand">
-    <Logo />
-
-    <span className="admin-brand-badge">Admin</span>
-  </Link>
-</div>
+        <div className="admin-sidebar-top">
+          <Link to="/admin" className="admin-brand">
+            <Logo />
+            <span className="admin-brand-badge">Admin</span>
+          </Link>
+        </div>
 
         <nav className="admin-nav" aria-label="Admin navigation">
           {adminLinks.map((link) => {
@@ -74,10 +98,20 @@ function AdminLayout() {
         <div className="admin-sidebar-bottom">
           <Link to="/">View Website</Link>
 
-          <button type="button">
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+          >
             <FiLogOut />
-            Logout
+            {isLoggingOut ? "Logging out..." : "Logout"}
           </button>
+
+          {logoutError && (
+            <p className="admin-logout-error" role="alert">
+              {logoutError}
+            </p>
+          )}
         </div>
       </aside>
 

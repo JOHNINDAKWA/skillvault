@@ -1,0 +1,225 @@
+.admin-resource-manage-loading {
+  min-height: 65vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.8rem;
+  background: #fbfaf7;
+  color: #70685f;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.admin-resource-manage-message {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid transparent;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.admin-resource-manage-message-error {
+  border-color: #efc2bd;
+  background: #fff1ef;
+  color: #9b2c22;
+}
+
+.admin-resource-manage-message-success {
+  border-color: #b8dbc3;
+  background: #edf9f0;
+  color: #206b39;
+}
+
+.admin-resource-manage-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(153, 101, 21, 0.18);
+  border-top-color: #996515;
+  border-radius: 999px;
+  animation: admin-resource-manage-spin 0.75s linear infinite;
+}
+
+.admin-resource-manage-spinner-light {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+  border-color: rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+}
+
+.admin-resource-manage-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.admin-upload-help {
+  margin: 0.55rem 0 0;
+  color: #70685f;
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+
+.admin-gallery-file-label {
+  color: #70685f;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.admin-gallery-fields > button {
+  width: fit-content;
+  min-height: 34px;
+  border: 1px solid #e8e2dc;
+  background: #ffffff;
+  color: #11100e;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.65rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.admin-gallery-upload-button {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.admin-gallery-upload-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.admin-current-file {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 0.85rem;
+  border: 1px solid #e8e2dc;
+  background: #fbfaf7;
+  padding: 0.75rem;
+}
+
+.admin-current-file span {
+  color: #70685f;
+  font-size: 0.62rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.admin-current-file strong {
+  color: #11100e;
+  font-size: 0.76rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-resource-manage-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 450;
+  display: grid;
+  place-items: center;
+  background: rgba(17, 16, 14, 0.72);
+  padding: 1rem;
+}
+
+.admin-resource-manage-modal {
+  position: relative;
+  width: min(100%, 460px);
+  background: #ffffff;
+  border: 1px solid #e8e2dc;
+  padding: 1.5rem;
+}
+
+.admin-resource-manage-modal > svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1rem;
+  border-radius: 999px;
+  background: #fee8e5;
+  color: #a1352b;
+  padding: 0.8rem;
+}
+
+.admin-resource-manage-modal > span {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #996515;
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.admin-resource-manage-modal h2 {
+  margin: 0;
+  color: #11100e;
+  font-size: 1.5rem;
+  letter-spacing: -0.04em;
+}
+
+.admin-resource-manage-modal p {
+  margin: 0.7rem 0 0;
+  color: #70685f;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.admin-resource-manage-modal-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e8e2dc;
+  background: #ffffff;
+  color: #11100e;
+  display: grid;
+  place-items: center;
+}
+
+.admin-resource-manage-modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+  margin-top: 1.2rem;
+}
+
+.admin-resource-manage-modal-actions button {
+  min-height: 44px;
+  border: 1px solid #e8e2dc;
+  background: #ffffff;
+  color: #11100e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-resource-manage-modal-actions button.is-danger {
+  border-color: #a1352b;
+  background: #a1352b;
+  color: #ffffff;
+}
+
+@keyframes admin-resource-manage-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 620px) {
+  .admin-resource-manage-modal-actions {
+    grid-template-columns: 1fr;
+  }
+}

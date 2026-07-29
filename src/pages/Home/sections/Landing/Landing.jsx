@@ -1,45 +1,89 @@
 import { Link } from "react-router-dom";
-import desktopImage from "../../../../assets/images/home-banner.png";
-import mobileImage from "../../../../assets/images/bg-banner.png";
+import { FiArrowUpRight, FiBookOpen } from "react-icons/fi";
+
+import landingImage from "../../../../assets/images/home-banner.png";
+
 import "./Landing.css";
+
+const resourceTypes = [
+  "Guides",
+  "Templates",
+  "Checklists",
+  "Workbooks",
+];
 
 function Landing() {
   return (
-    <section className="landing-section">
-      <picture>
-        <source media="(max-width: 900px)" srcSet={mobileImage} />
-        <img
-          src={desktopImage}
-          alt="Digital guides, templates, and learning resources"
-          className="landing-bg-image"
-        />
-      </picture>
-
-      <div className="landing-soft-overlay" />
-
+    <section className="landing-section" aria-labelledby="landing-title">
       <div className="container landing-container">
         <div className="landing-content">
-          <span className="landing-small-title">Digital Knowledge Marketplace</span>
+          <span className="landing-eyebrow">
+            SkillVault Digital Library
+          </span>
 
-          <h1>
-            Learn practical skills. Build your career. Grow your income.
+          <h1 id="landing-title">
+            Practical resources for better work, stronger careers, and smarter
+            decisions.
           </h1>
 
-          <p>
-            Affordable guides, templates, checklists, and resources for people who
-            want to learn faster, work smarter, and take action.
+          <p className="landing-description">
+            Access carefully developed guides, templates, and learning tools
+            created to help you solve real problems, develop useful skills, and
+            make meaningful progress.
           </p>
 
           <div className="landing-actions">
-            <Link to="/resources" className="landing-btn landing-btn-primary">
-              Browse Resources
+            <Link
+              to="/resources"
+              className="landing-btn landing-btn-primary"
+            >
+              Explore Resources
+              <FiArrowUpRight aria-hidden="true" />
             </Link>
 
-            <Link to="/about" className="landing-btn landing-btn-secondary">
-              Learn More
+            <Link
+              to="/about"
+              className="landing-btn landing-btn-secondary"
+            >
+              <FiBookOpen aria-hidden="true" />
+              About SkillVault
             </Link>
           </div>
+
+          <div className="landing-resource-types" aria-label="Resource types">
+            {resourceTypes.map((type) => (
+              <span key={type}>{type}</span>
+            ))}
+          </div>
         </div>
+
+        <figure className="landing-visual">
+          <div className="landing-image-frame">
+            <img
+              src={landingImage}
+              alt="A modern digital learning workspace with guides, templates, and productivity resources"
+              className="landing-main-image"
+            />
+          </div>
+
+          <figcaption className="landing-caption">
+            <div>
+              <span className="landing-caption-label">
+                Knowledge designed for action
+              </span>
+
+              <p>
+                Clear, focused resources for professionals, entrepreneurs,
+                students, and ambitious learners.
+              </p>
+            </div>
+
+            <Link to="/resources" className="landing-caption-link">
+              View the library
+              <FiArrowUpRight aria-hidden="true" />
+            </Link>
+          </figcaption>
+        </figure>
       </div>
     </section>
   );

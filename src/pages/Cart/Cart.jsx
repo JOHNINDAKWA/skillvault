@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import {
   FiArrowLeft,
+  FiArrowUpRight,
   FiCreditCard,
+  FiImage,
   FiLock,
   FiShoppingBag,
   FiTrash2,
@@ -9,7 +11,12 @@ import {
 } from "react-icons/fi";
 
 import { useResources } from "../../hooks/useResources.js";
+
 import "./Cart.css";
+
+function formatMoney(amount) {
+  return `KSh ${Number(amount || 0).toLocaleString("en-US")}`;
+}
 
 function Cart() {
   const {
@@ -26,155 +33,195 @@ function Cart() {
 
   if (!hasItems) {
     return (
-      <section className="cart-page">
+      <main className="sv-cart-page">
         <div className="container">
-          <div className="cart-empty">
-            <div className="cart-empty-icon">
+          <section className="sv-cart-empty" aria-labelledby="empty-cart-title">
+            <span className="sv-cart-empty-icon" aria-hidden="true">
               <FiShoppingBag />
-            </div>
+            </span>
 
-            <span>Your Basket Is Empty</span>
+            <span className="sv-cart-eyebrow">Your basket</span>
 
-            <h1>No resources added yet</h1>
+            <h1 id="empty-cart-title">No resources added yet.</h1>
 
             <p>
-              Explore SkillVault resources and add practical guides, templates,
-              playbooks, and planners to your basket.
+              Browse practical guides, templates, playbooks, and planners, then
+              add the resources that support what you are working on.
             </p>
 
-            <Link to="/resources">
-              <FiArrowLeft />
-              Browse Resources
+            <Link to="/resources" className="sv-cart-empty-link">
+              <FiArrowLeft aria-hidden="true" />
+              <span>Browse resources</span>
             </Link>
-          </div>
+          </section>
         </div>
-      </section>
+      </main>
     );
   }
 
   return (
-    <section className="cart-page">
+    <main className="sv-cart-page">
       <div className="container">
-        <div className="cart-header">
+        <header className="sv-cart-header">
           <div>
-            <span>Your Basket</span>
+            <span className="sv-cart-eyebrow">Your basket</span>
 
-            <h1>Review Your Resources</h1>
+            <h1>Review your selected resources.</h1>
           </div>
 
           <p>
-            {basketCount} item{basketCount === 1 ? "" : "s"} ready for checkout
+            {basketCount} item{basketCount === 1 ? "" : "s"} ready for
+            checkout
           </p>
-        </div>
+        </header>
 
-        <div className="cart-layout">
-          <div className="cart-items-panel">
-            <div className="cart-items-top">
-              <h2>Selected Resources</h2>
+        <div className="sv-cart-layout">
+          <section
+            className="sv-cart-items-section"
+            aria-labelledby="selected-resources-title"
+          >
+            <div className="sv-cart-items-heading">
+              <h2 id="selected-resources-title">Selected resources</h2>
 
               <button type="button" onClick={clearBasket}>
-                <FiX />
-                Clear Basket
+                <FiX aria-hidden="true" />
+                <span>Clear basket</span>
               </button>
             </div>
 
-            <div className="cart-items-list">
-              {basketItems.map((item) => (
-                <article className="cart-item" key={item.id}>
-                  <Link to={`/product/${item.slug}`} className="cart-item-image">
-                    <img src={item.image} alt={item.title} />
-                  </Link>
+            <div className="sv-cart-items-list">
+              {basketItems.map((item) => {
+                const hasDiscount =
+                  Number(item.oldPrice) > Number(item.price);
 
-                  <div className="cart-item-content">
-                    <span>
-                      {item.category} / {item.type}
-                    </span>
-
-                    <h3>
-                      <Link to={`/product/${item.slug}`}>{item.title}</Link>
-                    </h3>
-
-                    <p>{item.description}</p>
-
-                    <div className="cart-item-meta">
-                      <strong>KSh {item.price}</strong>
-                      <del>KSh {item.oldPrice}</del>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="cart-remove-btn"
-                    onClick={() => removeFromBasket(item.id)}
-                    aria-label={`Remove ${item.title} from basket`}
+                return (
+                  <article
+                    className="sv-cart-item"
+                    key={item.id || item.slug}
                   >
-                    <FiTrash2 />
-                    Remove
-                  </button>
-                </article>
-              ))}
+                    <Link
+                      to={`/product/${item.slug}`}
+                      className="sv-cart-item-image"
+                      aria-label={`View ${item.title}`}
+                    >
+                      {item.image ? (
+                        <img src={item.image} alt={item.title} />
+                      ) : (
+                        <span className="sv-cart-image-placeholder">
+                          <FiImage aria-hidden="true" />
+                        </span>
+                      )}
+                    </Link>
+
+                    <div className="sv-cart-item-copy">
+                      <span className="sv-cart-item-category">
+                        {item.category}
+                        {item.type ? ` / ${item.type}` : ""}
+                      </span>
+
+                      <h3>
+                        <Link to={`/product/${item.slug}`}>{item.title}</Link>
+                      </h3>
+
+                      <p>
+                        {item.shortDescription ||
+                          item.description ||
+                          "A practical SkillVault digital resource."}
+                      </p>
+
+                      <div className="sv-cart-item-price">
+                        <strong>{formatMoney(item.price)}</strong>
+
+                        {hasDiscount && (
+                          <del>{formatMoney(item.oldPrice)}</del>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="sv-cart-remove"
+                      onClick={() =>
+                        removeFromBasket(item.id || item.slug)
+                      }
+                      aria-label={`Remove ${item.title} from basket`}
+                    >
+                      <FiTrash2 aria-hidden="true" />
+                      <span>Remove</span>
+                    </button>
+                  </article>
+                );
+              })}
             </div>
 
-            <Link to="/resources" className="cart-continue-link">
-              <FiArrowLeft />
-              Continue Shopping
+            <Link to="/resources" className="sv-cart-continue">
+              <FiArrowLeft aria-hidden="true" />
+              <span>Continue browsing</span>
             </Link>
-          </div>
+          </section>
 
-          <aside className="cart-summary-panel">
-            <div className="cart-summary-card">
-              <span>Order Summary</span>
+          <aside className="sv-cart-summary">
+            <div className="sv-cart-summary-card">
+              <span className="sv-cart-eyebrow">Order summary</span>
 
-              <h2>Basket Total</h2>
+              <h2>Basket total</h2>
 
-              <div className="cart-summary-lines">
+              <div className="sv-cart-summary-lines">
                 <div>
-                  <p>Original price</p>
-                  <strong>KSh {basketOldTotal}</strong>
+                  <span>Original price</span>
+                  <strong>{formatMoney(basketOldTotal)}</strong>
                 </div>
 
                 <div>
-                  <p>Discount</p>
-                  <strong>- KSh {basketSavings}</strong>
+                  <span>Discount</span>
+                  <strong>- {formatMoney(basketSavings)}</strong>
                 </div>
 
                 <div>
-                  <p>Delivery</p>
+                  <span>Delivery</span>
                   <strong>Digital</strong>
                 </div>
               </div>
 
-              <div className="cart-summary-total">
-                <p>Total</p>
-                <strong>KSh {basketTotal}</strong>
+              <div className="sv-cart-total">
+                <span>Total</span>
+                <strong>{formatMoney(basketTotal)}</strong>
               </div>
 
-              <Link to="/checkout" className="cart-checkout-btn">
-                <FiCreditCard />
-                Proceed To Checkout
+              <Link to="/checkout" className="sv-cart-checkout">
+                <FiCreditCard aria-hidden="true" />
+                <span>Proceed to checkout</span>
+                <FiArrowUpRight aria-hidden="true" />
               </Link>
 
-              <div className="cart-secure-note">
-                <FiLock />
+              <div className="sv-cart-secure-note">
+                <FiLock aria-hidden="true" />
+
                 <p>
-                  Secure checkout. Your resources will be available in your
-                  SkillVault library after purchase.
+                  Opening checkout starts anonymous product-interest tracking.
+                  Contact details are saved only after the checkout notice is
+                  acknowledged.
                 </p>
               </div>
             </div>
 
-            <div className="cart-help-box">
-              <h3>Need help choosing?</h3>
+            <div className="sv-cart-help">
+              <h3>Still comparing resources?</h3>
+
               <p>
-                You can review each resource before checkout or continue browsing
-                for more practical packs.
+                Return to the library to review more guides and practical
+                resource packs before checking out.
               </p>
-              <Link to="/resources">Explore More Resources</Link>
+
+              <Link to="/resources">
+                Explore more resources
+                <FiArrowUpRight aria-hidden="true" />
+              </Link>
             </div>
           </aside>
         </div>
       </div>
-    </section>
+    </main>
   );
 }
 

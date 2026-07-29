@@ -185,7 +185,6 @@
   width: 30px;
   height: 30px;
   border-radius: 999px;
-  background: var(--color-white);
   color: var(--color-dark);
   display: inline-flex;
   align-items: center;

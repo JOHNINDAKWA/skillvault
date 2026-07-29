@@ -1,0 +1,24 @@
+.resource-icons button.is-wishlisted {
+  border-color: #996515;
+  background: #f2eadc;
+  color: #996515;
+  opacity: 1;
+}
+
+.resource-icons button.is-wishlisted svg {
+  fill: currentColor;
+}
+
+.resource-icons button:disabled {
+  cursor: wait;
+}
+
+.resource-wishlist-spinner {
+  animation: resource-wishlist-spin 0.75s linear infinite;
+}
+
+@keyframes resource-wishlist-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

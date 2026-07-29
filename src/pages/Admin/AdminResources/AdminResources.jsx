@@ -1,267 +1,573 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FiArchive,
   FiBookOpen,
+  FiCheckCircle,
   FiEdit3,
   FiEye,
-  FiFilter,
+  FiFileText,
   FiPlus,
+  FiRefreshCcw,
   FiSearch,
+  FiShoppingBag,
   FiTrash2,
+  FiX,
 } from "react-icons/fi";
 
-import { resources } from "../../../data/resources.js";
+import { adminResourceService } from "../../../services/adminResourceService.js";
+
 import "./AdminResources.css";
 
-const adminResources = resources.map((resource, index) => ({
-  ...resource,
-  status: [
-    "Published",
-    "Published",
-    "Draft",
-    "Published",
-    "Archived",
-    "Published",
-  ][index % 6],
-  sales: [84, 62, 17, 49, 8, 37, 26, 14][index % 8],
-  lastUpdated: [
-    "Today",
-    "Yesterday",
-    "24 Jun 2026",
-    "22 Jun 2026",
-    "19 Jun 2026",
-    "14 Jun 2026",
-    "09 Jun 2026",
-    "02 Jun 2026",
-  ][index % 8],
-}));
+function formatStatus(status) {
+  if (!status) {
+    return "Unknown";
+  }
+
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function formatDate(value) {
+  if (!value) {
+    return "Not available";
+  }
+
+  return new Intl.DateTimeFormat("en-KE", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatMoney(amount) {
+  return `KSh ${Number(amount || 0).toLocaleString("en-US")}`;
+}
 
 function AdminResources() {
+  const [resources, setResources] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageError, setPageError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeStatus, setActiveStatus] = useState("All");
+  const [activeStatus, setActiveStatus] = useState("all");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const loadResources = async () => {
+    setIsLoading(true);
+    setPageError("");
+
+    try {
+      const response = await adminResourceService.listResources();
+      setResources(response.data.resources);
+    } catch (error) {
+      setPageError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadResources();
+  }, []);
 
   const filteredResources = useMemo(() => {
-    return adminResources.filter((resource) => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    return resources.filter((resource) => {
+      const searchableText = [
+        resource.title,
+        resource.category,
+        resource.type,
+        resource.shortDescription,
+        resource.description,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
       const matchesSearch =
-        resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        resource.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        resource.type.toLowerCase().includes(searchTerm.toLowerCase());
+        !normalizedSearch ||
+        searchableText.includes(normalizedSearch);
 
       const matchesStatus =
-        activeStatus === "All" || resource.status === activeStatus;
+        activeStatus === "all" ||
+        resource.status === activeStatus;
 
       return matchesSearch && matchesStatus;
     });
-  }, [searchTerm, activeStatus]);
+  }, [resources, searchTerm, activeStatus]);
 
-  const publishedCount = adminResources.filter(
-    (resource) => resource.status === "Published",
-  ).length;
+  const resourceStats = useMemo(() => {
+    const published = resources.filter(
+      (resource) => resource.status === "published"
+    ).length;
 
-  const draftCount = adminResources.filter(
-    (resource) => resource.status === "Draft",
-  ).length;
+    const drafts = resources.filter(
+      (resource) => resource.status === "draft"
+    ).length;
 
-  const archivedCount = adminResources.filter(
-    (resource) => resource.status === "Archived",
-  ).length;
+    const archived = resources.filter(
+      (resource) => resource.status === "archived"
+    ).length;
 
-  const totalSales = adminResources.reduce(
-    (total, resource) => total + resource.sales,
-    0,
-  );
+    const sales = resources.reduce(
+      (total, resource) =>
+        total + Number(resource.sales || 0),
+      0
+    );
+
+    return {
+      total: resources.length,
+      published,
+      drafts,
+      archived,
+      sales,
+    };
+  }, [resources]);
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setPageError("");
+    setSuccessMessage("");
+
+    try {
+      const response = await adminResourceService.deleteResource(
+        deleteTarget.id
+      );
+
+      setResources((currentResources) =>
+        currentResources.filter(
+          (resource) => resource.id !== deleteTarget.id
+        )
+      );
+
+      setDeleteTarget(null);
+      setSuccessMessage(response.message);
+    } catch (error) {
+      setPageError(error.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+  };
 
   return (
-    <section className="admin-resources-page">
-      <div className="admin-resources-hero">
+    <main className="arv-page">
+      <section className="arv-hero">
         <div>
-          <span>Resource Management</span>
-
+          <span>Resource management</span>
           <h1>Manage digital resources</h1>
-
           <p>
-            Review listed products, monitor sales, check publishing status, and
-            prepare resources for editing, deletion, or new uploads.
+            Create, publish, update, archive, and review every resource
+            available through SkillVault.
           </p>
         </div>
 
-        <Link to="/admin/resources/new">
-          <FiPlus />
-          Add Resource
+        <Link to="/admin/resources/new" className="arv-primary-action">
+          <FiPlus aria-hidden="true" />
+          Add resource
         </Link>
-      </div>
+      </section>
 
-      <div className="admin-resources-stats">
-        <article>
-          <FiBookOpen />
+      {pageError && (
+        <div className="arv-message arv-message-error" role="alert">
+          <span>{pageError}</span>
+
+          <button type="button" onClick={loadResources}>
+            <FiRefreshCcw aria-hidden="true" />
+            Retry
+          </button>
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="arv-message arv-message-success" role="status">
+          <FiCheckCircle aria-hidden="true" />
+          <span>{successMessage}</span>
+
+          <button
+            type="button"
+            onClick={() => setSuccessMessage("")}
+            aria-label="Dismiss success message"
+          >
+            <FiX aria-hidden="true" />
+          </button>
+        </div>
+      )}
+
+      <section
+        className="arv-stats-grid"
+        aria-label="Resource statistics"
+      >
+        <article className="arv-stat-card">
+          <span className="arv-stat-icon">
+            <FiBookOpen aria-hidden="true" />
+          </span>
+
           <div>
-            <strong>{adminResources.length}</strong>
             <span>Total resources</span>
+            <strong>{resourceStats.total}</strong>
           </div>
         </article>
 
-        <article>
-          <FiEye />
+        <article className="arv-stat-card">
+          <span className="arv-stat-icon">
+            <FiEye aria-hidden="true" />
+          </span>
+
           <div>
-            <strong>{publishedCount}</strong>
             <span>Published</span>
+            <strong>{resourceStats.published}</strong>
           </div>
         </article>
 
-        <article>
-          <FiEdit3 />
+        <article className="arv-stat-card">
+          <span className="arv-stat-icon">
+            <FiEdit3 aria-hidden="true" />
+          </span>
+
           <div>
-            <strong>{draftCount}</strong>
             <span>Drafts</span>
+            <strong>{resourceStats.drafts}</strong>
           </div>
         </article>
 
-        <article>
-          <FiArchive />
+        <article className="arv-stat-card">
+          <span className="arv-stat-icon">
+            <FiArchive aria-hidden="true" />
+          </span>
+
           <div>
-            <strong>{totalSales}</strong>
+            <span>Archived</span>
+            <strong>{resourceStats.archived}</strong>
+          </div>
+        </article>
+
+        <article className="arv-stat-card arv-stat-card-accent">
+          <span className="arv-stat-icon">
+            <FiShoppingBag aria-hidden="true" />
+          </span>
+
+          <div>
             <span>Total sales</span>
+            <strong>{resourceStats.sales}</strong>
           </div>
         </article>
-      </div>
+      </section>
 
-      <div className="admin-resources-panel">
-        <div className="admin-resources-panel-header">
-          <div>
+      <section className="arv-panel">
+        <div className="arv-panel-header">
+          <div className="arv-panel-title">
             <span>Inventory</span>
             <h2>All resources</h2>
+            <p>
+              Showing {filteredResources.length} of {resources.length} resources
+            </p>
           </div>
 
-          <div className="admin-resources-tools">
-            <label className="admin-resources-search">
-              <FiSearch />
+          <div className="arv-toolbar">
+            <label className="arv-search">
+              <FiSearch aria-hidden="true" />
 
               <input
                 type="search"
-                placeholder="Search resources..."
+                placeholder="Search by title, category, type..."
                 value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
+                onChange={(event) =>
+                  setSearchTerm(event.target.value)
+                }
               />
+
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  aria-label="Clear search"
+                >
+                  <FiX aria-hidden="true" />
+                </button>
+              )}
             </label>
 
-            <div className="admin-resources-filter">
-              <FiFilter />
+            <label className="arv-status-filter">
+              <span className="sr-only">Filter by status</span>
 
               <select
                 value={activeStatus}
-                onChange={(event) => setActiveStatus(event.target.value)}
+                onChange={(event) =>
+                  setActiveStatus(event.target.value)
+                }
               >
-                <option value="All">All Status</option>
-                <option value="Published">Published</option>
-                <option value="Draft">Draft</option>
-                <option value="Archived">Archived</option>
+                <option value="all">All statuses</option>
+                <option value="published">Published</option>
+                <option value="draft">Drafts</option>
+                <option value="archived">Archived</option>
               </select>
-            </div>
+            </label>
+
+            <button
+              type="button"
+              className="arv-refresh"
+              onClick={loadResources}
+              disabled={isLoading}
+            >
+              <FiRefreshCcw
+                className={isLoading ? "is-spinning" : ""}
+                aria-hidden="true"
+              />
+              Refresh
+            </button>
           </div>
         </div>
 
-        <div className="admin-resources-tabs">
-          <button
-            type="button"
-            className={activeStatus === "All" ? "is-active" : ""}
-            onClick={() => setActiveStatus("All")}
-          >
-            All
-          </button>
-
-          <button
-            type="button"
-            className={activeStatus === "Published" ? "is-active" : ""}
-            onClick={() => setActiveStatus("Published")}
-          >
-            Published
-          </button>
-
-          <button
-            type="button"
-            className={activeStatus === "Draft" ? "is-active" : ""}
-            onClick={() => setActiveStatus("Draft")}
-          >
-            Draft
-          </button>
-
-          <button
-            type="button"
-            className={activeStatus === "Archived" ? "is-active" : ""}
-            onClick={() => setActiveStatus("Archived")}
-          >
-            Archived
-          </button>
-        </div>
-
-        <div className="admin-resources-table">
-          <div className="admin-resources-table-head">
-            <span>Resource</span>
-            <span>Category</span>
-            <span>Type</span>
-            <span>Price</span>
-            <span>Sales</span>
-            <span>Status</span>
-            <span>Updated</span>
-            <span>Actions</span>
-          </div>
-
-          {filteredResources.map((resource) => (
-            <article className="admin-resource-item" key={resource.id}>
-              <div className="admin-resource-product">
-                <img src={resource.image} alt={resource.title} />
-
-                <div>
-                  <strong>{resource.title}</strong>
-                  <small>{resource.description}</small>
-                </div>
-              </div>
-
-              <span>{resource.category}</span>
-
-              <span>{resource.type}</span>
-
-              <strong>KSh {resource.price.toLocaleString()}</strong>
-
-              <span>{resource.sales}</span>
-
-              <em
-                className={`admin-resource-status admin-resource-status-${resource.status.toLowerCase()}`}
-              >
-                {resource.status}
-              </em>
-
-              <span>{resource.lastUpdated}</span>
-
-              <div className="admin-resource-actions">
-                <Link to={`/product/${resource.slug}`} title="View resource">
-                  <FiEye />
-                </Link>
-
-                <Link
-                  to={`/admin/resources/${resource.slug}/edit`}
-                  title="Edit resource"
-                >
-                  <FiEdit3 />
-                </Link>
-
-                <button type="button" title="Delete resource">
-                  <FiTrash2 />
-                </button>
-              </div>
-            </article>
+        <div className="arv-filter-chips" aria-label="Resource status filters">
+          {[
+            ["all", "All", resourceStats.total],
+            ["published", "Published", resourceStats.published],
+            ["draft", "Drafts", resourceStats.drafts],
+            ["archived", "Archived", resourceStats.archived],
+          ].map(([value, label, count]) => (
+            <button
+              key={value}
+              type="button"
+              className={activeStatus === value ? "is-active" : ""}
+              onClick={() => setActiveStatus(value)}
+            >
+              <span>{label}</span>
+              <strong>{count}</strong>
+            </button>
           ))}
         </div>
 
-        {filteredResources.length === 0 && (
-          <div className="admin-resources-empty">
+        {isLoading ? (
+          <div className="arv-loading" role="status">
+            <span className="arv-spinner" aria-hidden="true" />
+            <strong>Loading resources</strong>
+            <p>Please wait while the latest inventory is retrieved.</p>
+          </div>
+        ) : filteredResources.length > 0 ? (
+          <div className="arv-table-wrap">
+            <table className="arv-table">
+              <thead>
+                <tr>
+                  <th scope="col">Resource</th>
+                  <th scope="col">Classification</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Sales</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Updated</th>
+                  <th scope="col" className="arv-actions-column">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredResources.map((resource) => (
+                  <tr key={resource.id}>
+                    <td data-label="Resource">
+                      <div className="arv-resource-cell">
+                        {resource.coverImage?.url ? (
+                          <img
+                            src={resource.coverImage.url}
+                            alt={resource.title}
+                          />
+                        ) : (
+                          <span className="arv-cover-placeholder">
+                            <FiFileText aria-hidden="true" />
+                          </span>
+                        )}
+
+                        <div>
+                          <strong>{resource.title}</strong>
+
+                          <p>
+                            {resource.shortDescription ||
+                              resource.description ||
+                              "No description added."}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td data-label="Classification">
+                      <div className="arv-classification">
+                        <strong>{resource.category}</strong>
+                        <span>{resource.type}</span>
+                      </div>
+                    </td>
+
+                    <td data-label="Price">
+                      <strong className="arv-price">
+                        {formatMoney(resource.price)}
+                      </strong>
+                    </td>
+
+                    <td data-label="Sales">
+                      <span className="arv-sales">
+                        {Number(resource.sales || 0).toLocaleString(
+                          "en-US"
+                        )}
+                      </span>
+                    </td>
+
+                    <td data-label="Status">
+                      <span
+                        className={`arv-status arv-status-${resource.status}`}
+                      >
+                        <span aria-hidden="true" />
+                        {formatStatus(resource.status)}
+                      </span>
+                    </td>
+
+                    <td data-label="Updated">
+                      <span className="arv-date">
+                        {formatDate(resource.updatedAt)}
+                      </span>
+                    </td>
+
+                    <td data-label="Actions">
+                      <div className="arv-actions">
+                        {resource.status === "published" ? (
+                          <Link
+                            to={`/product/${resource.slug}`}
+                            className="arv-action-button"
+                            aria-label={`View ${resource.title}`}
+                            title="View resource"
+                          >
+                            <FiEye aria-hidden="true" />
+                          </Link>
+                        ) : (
+                          <button
+                            type="button"
+                            className="arv-action-button"
+                            disabled
+                            aria-label={`View unavailable for ${resource.title}`}
+                            title="Publish the resource before viewing it publicly."
+                          >
+                            <FiEye aria-hidden="true" />
+                          </button>
+                        )}
+
+                        <Link
+                          to={`/admin/resources/${resource.slug}/edit`}
+                          className="arv-action-button"
+                          aria-label={`Edit ${resource.title}`}
+                          title="Edit resource"
+                        >
+                          <FiEdit3 aria-hidden="true" />
+                        </Link>
+
+                        <button
+                          type="button"
+                          className="arv-action-button arv-action-delete"
+                          onClick={() => setDeleteTarget(resource)}
+                          aria-label={`Delete ${resource.title}`}
+                          title="Delete resource"
+                        >
+                          <FiTrash2 aria-hidden="true" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="arv-empty">
+            <FiSearch aria-hidden="true" />
+
             <h3>No resources found</h3>
-            <p>Try changing the search term or selected status filter.</p>
+
+            <p>
+              Try changing the search term or selected status filter.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSearchTerm("");
+                setActiveStatus("all");
+              }}
+            >
+              Reset filters
+            </button>
           </div>
         )}
-      </div>
-    </section>
+      </section>
+
+      {deleteTarget && (
+        <div className="arv-modal-backdrop">
+          <div
+            className="arv-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-resource-title"
+          >
+            <button
+              type="button"
+              className="arv-modal-close"
+              onClick={() => setDeleteTarget(null)}
+              disabled={isDeleting}
+              aria-label="Close deletion confirmation"
+            >
+              <FiX aria-hidden="true" />
+            </button>
+
+            <span className="arv-modal-icon">
+              <FiTrash2 aria-hidden="true" />
+            </span>
+
+            <span className="arv-modal-eyebrow">Delete resource</span>
+
+            <h2 id="delete-resource-title">
+              Delete {deleteTarget.title}?
+            </h2>
+
+            <p>
+              This permanently removes the database record and its uploaded
+              cover, gallery images, and PDF file. This action cannot be
+              undone.
+            </p>
+
+            <div className="arv-modal-actions">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="is-danger"
+                onClick={confirmDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting && (
+                  <span
+                    className="arv-spinner arv-spinner-light"
+                    aria-hidden="true"
+                  />
+                )}
+
+                {isDeleting ? "Deleting..." : "Delete resource"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
   );
 }
 

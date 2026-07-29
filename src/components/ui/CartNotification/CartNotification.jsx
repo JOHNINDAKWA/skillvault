@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import {
   FiCheck,
-  FiX,
-  FiShoppingBag,
   FiCreditCard,
+  FiShoppingBag,
+  FiX,
 } from "react-icons/fi";
 
 import { useResources } from "../../../hooks/useResources.js";
+
 import "./CartNotification.css";
 
 function CartNotification() {
@@ -19,57 +20,85 @@ function CartNotification() {
   const { resource, alreadyInBasket } = cartNotice;
 
   return (
-    <div className="cart-toast-wrap" role="status" aria-live="polite">
-      <div className="cart-toast">
-        <div className="cart-toast-success-icon">
-          <FiCheck />
-        </div>
-
-        <div className="cart-toast-body">
-          <div className="cart-toast-top">
-            <span>
-              {alreadyInBasket ? "Already in basket" : "Added to basket"}
+    <div
+      className="cart-notice-region"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <article className="cart-notice">
+        <div className="cart-notice-header">
+          <div className="cart-notice-status">
+            <span className="cart-notice-status-icon" aria-hidden="true">
+              <FiCheck />
             </span>
 
-            <button
-              type="button"
-              className="cart-toast-close"
-              onClick={closeCartNotice}
-              aria-label="Close notification"
-            >
-              <FiX />
-            </button>
+            <div>
+              <span className="cart-notice-eyebrow">
+                {alreadyInBasket ? "Basket update" : "Added successfully"}
+              </span>
+
+              <strong>
+                {alreadyInBasket
+                  ? "This resource is already in your basket."
+                  : "Your resource is ready in the basket."}
+              </strong>
+            </div>
           </div>
 
-          <h3>{resource.title}</h3>
+          <button
+            type="button"
+            className="cart-notice-close"
+            onClick={closeCartNotice}
+            aria-label="Close basket notification"
+          >
+            <FiX aria-hidden="true" />
+          </button>
+        </div>
 
-          <p>
-            {alreadyInBasket
-              ? "This resource is already saved in your basket."
-              : "This resource has been added successfully."}
-          </p>
+        <div className="cart-notice-resource">
+          {resource.image && (
+            <div className="cart-notice-image">
+              <img src={resource.image} alt="" aria-hidden="true" />
+            </div>
+          )}
 
-          <div className="cart-toast-actions">
-            <Link
-              to="/cart"
-              className="cart-toast-link cart-toast-link-light"
-              onClick={closeCartNotice}
-            >
-              <FiShoppingBag />
-              View Cart
-            </Link>
+          <div className="cart-notice-resource-copy">
+            <span>
+              {resource.category}
+              {resource.type ? ` / ${resource.type}` : ""}
+            </span>
 
-            <Link
-              to="/checkout"
-              className="cart-toast-link cart-toast-link-dark"
-              onClick={closeCartNotice}
-            >
-              <FiCreditCard />
-              Checkout
-            </Link>
+            <h3>{resource.title}</h3>
+
+            {resource.price !== undefined && resource.price !== null && (
+              <strong>
+                KSh {Number(resource.price || 0).toLocaleString("en-US")}
+              </strong>
+            )}
           </div>
         </div>
-      </div>
+
+        <div className="cart-notice-actions">
+          <Link
+            to="/cart"
+            className="cart-notice-action cart-notice-action-secondary"
+            onClick={closeCartNotice}
+          >
+            <FiShoppingBag aria-hidden="true" />
+            <span>View basket</span>
+          </Link>
+
+          <Link
+            to="/checkout"
+            className="cart-notice-action cart-notice-action-primary"
+            onClick={closeCartNotice}
+          >
+            <FiCreditCard aria-hidden="true" />
+            <span>Continue to checkout</span>
+          </Link>
+        </div>
+      </article>
     </div>
   );
 }
