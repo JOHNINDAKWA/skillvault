@@ -41,6 +41,112 @@ function formatMoney(amount) {
   return `KSh ${Number(amount || 0).toLocaleString("en-US")}`;
 }
 
+function extractImageUrl(value) {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
+  if (!value || typeof value !== "object") {
+    return "";
+  }
+
+  const possibleUrls = [
+    value.url,
+    value.secureUrl,
+    value.secure_url,
+    value.src,
+    value.path,
+  ];
+
+  return (
+    possibleUrls.find(
+      (url) =>
+        typeof url === "string" &&
+        url.trim()
+    )?.trim() || ""
+  );
+}
+
+function collectImageUrls(resource) {
+  if (!resource) {
+    return [];
+  }
+
+  const galleryValues = Array.isArray(resource.gallery)
+    ? resource.gallery
+    : [];
+
+  const possibleImages = [
+    resource.coverImage,
+    resource.image,
+    resource.mainImage,
+    resource.thumbnail,
+    ...galleryValues,
+    resource.hoverImage,
+  ];
+
+  return [
+    ...new Set(
+      possibleImages
+        .map(extractImageUrl)
+        .filter(Boolean)
+    ),
+  ];
+}
+
+function ResourceImage({
+  sources,
+  alt,
+  className = "",
+  placeholderClassName = "",
+  loading = "lazy",
+}) {
+  const normalizedSources = Array.isArray(sources)
+    ? sources.filter(Boolean)
+    : [];
+
+  const sourceKey = normalizedSources.join("|");
+
+  const [
+    sourceIndex,
+    setSourceIndex,
+  ] = useState(0);
+
+  useEffect(() => {
+    setSourceIndex(0);
+  }, [sourceKey]);
+
+  const source =
+    normalizedSources[sourceIndex];
+
+  if (!source) {
+    return (
+      <span
+        className={placeholderClassName}
+        aria-label={`${alt || "Resource"} image unavailable`}
+      >
+        <FiImage aria-hidden="true" />
+      </span>
+    );
+  }
+
+  return (
+    <img
+      src={source}
+      alt={alt || "SkillVault resource"}
+      className={className}
+      loading={loading}
+      decoding="async"
+      onError={() =>
+        setSourceIndex(
+          (currentIndex) =>
+            currentIndex + 1
+        )
+      }
+    />
+  );
+}
+
 function RatingStars({ rating }) {
   const numericRating = Number(rating || 0);
   const roundedRating = Math.round(numericRating);
@@ -77,7 +183,7 @@ function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [isLoadingProduct, setIsLoadingProduct] = useState(true);
   const [productError, setProductError] = useState("");
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState("");
 
   const loadProduct = async () => {
     setIsLoadingProduct(true);
@@ -95,16 +201,14 @@ function ProductDetails() {
         localFallback
       );
 
-      setProduct(normalizedProduct);
+      const productImages =
+        collectImageUrls(normalizedProduct);
 
-      setSelectedImage(
-        normalizedProduct.image ||
-          normalizedProduct.gallery?.[0] ||
-          null
-      );
+      setProduct(normalizedProduct);
+      setSelectedImage(productImages[0] || "");
     } catch (error) {
       setProduct(null);
-      setSelectedImage(null);
+      setSelectedImage("");
       setProductError(error.message);
     } finally {
       setIsLoadingProduct(false);
@@ -141,23 +245,19 @@ function ProductDetails() {
     return [...uniqueBySlug.values()].slice(0, 4);
   }, [resources, product]);
 
-  const galleryImages = useMemo(() => {
-    if (!product) {
-      return [];
-    }
+  const galleryImages = useMemo(
+    () => collectImageUrls(product).slice(0, 8),
+    [product]
+  );
 
-    return [
-      product.image,
-      ...(product.gallery || []),
-      product.hoverImage,
-    ]
-      .filter(Boolean)
-      .filter(
-        (image, index, allImages) =>
-          allImages.indexOf(image) === index
-      )
-      .slice(0, 8);
-  }, [product]);
+  useEffect(() => {
+    if (
+      galleryImages.length > 0 &&
+      !galleryImages.includes(selectedImage)
+    ) {
+      setSelectedImage(galleryImages[0]);
+    }
+  }, [galleryImages, selectedImage]);
 
   const descriptionParagraphs = useMemo(() => {
     if (!product) {
@@ -242,8 +342,15 @@ function ProductDetails() {
 
   const mainImage =
     selectedImage ||
-    product.image ||
-    galleryImages[0];
+    galleryImages[0] ||
+    "";
+
+  const mainImageSources = [
+    mainImage,
+    ...galleryImages.filter(
+      (image) => image !== mainImage
+    ),
+  ].filter(Boolean);
 
   const hasDiscount =
     Number(product.oldPrice) > Number(product.price);
@@ -277,20 +384,24 @@ function ProductDetails() {
                     onClick={() => setSelectedImage(image)}
                     aria-label={`View resource image ${index + 1}`}
                   >
-                    <img src={image} alt="" aria-hidden="true" />
+                    <ResourceImage
+                      sources={[image]}
+                      alt=""
+                      loading="lazy"
+                      placeholderClassName="pdv-image-placeholder"
+                    />
                   </button>
                 ))}
               </div>
             )}
 
             <div className="pdv-main-image">
-              {mainImage ? (
-                <img src={mainImage} alt={product.title} />
-              ) : (
-                <div className="pdv-image-placeholder">
-                  <FiImage aria-hidden="true" />
-                </div>
-              )}
+              <ResourceImage
+                sources={mainImageSources}
+                alt={product.title}
+                loading="eager"
+                placeholderClassName="pdv-image-placeholder"
+              />
             </div>
           </div>
 
@@ -509,44 +620,47 @@ function ProductDetails() {
             </div>
 
             <div className="pdv-related-grid">
-              {relatedResources.map((item) => (
-                <article
-                  className="pdv-related-card"
-                  key={item.id || item.slug}
-                >
-                  <Link
-                    to={`/product/${item.slug}`}
-                    className="pdv-related-image"
+              {relatedResources.map((item) => {
+                const relatedImages =
+                  collectImageUrls(item);
+
+                return (
+                  <article
+                    className="pdv-related-card"
+                    key={item.id || item.slug}
                   >
-                    {item.image ? (
-                      <img src={item.image} alt={item.title} />
-                    ) : (
-                      <span className="pdv-related-placeholder">
-                        <FiImage aria-hidden="true" />
-                      </span>
-                    )}
-                  </Link>
+                    <Link
+                      to={`/product/${item.slug}`}
+                      className="pdv-related-image"
+                    >
+                      <ResourceImage
+                        sources={relatedImages}
+                        alt={item.title}
+                        placeholderClassName="pdv-related-placeholder"
+                      />
+                    </Link>
 
-                  <div className="pdv-related-content">
-                    <span>{item.category}</span>
+                    <div className="pdv-related-content">
+                      <span>{item.category}</span>
 
-                    <h3>
-                      <Link to={`/product/${item.slug}`}>
-                        {item.title}
-                      </Link>
-                    </h3>
+                      <h3>
+                        <Link to={`/product/${item.slug}`}>
+                          {item.title}
+                        </Link>
+                      </h3>
 
-                    <div>
-                      <strong>{formatMoney(item.price)}</strong>
+                      <div>
+                        <strong>{formatMoney(item.price)}</strong>
 
-                      <Link to={`/product/${item.slug}`}>
-                        View resource
-                        <FiArrowUpRight aria-hidden="true" />
-                      </Link>
+                        <Link to={`/product/${item.slug}`}>
+                          View resource
+                          <FiArrowUpRight aria-hidden="true" />
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           </section>
         )}
