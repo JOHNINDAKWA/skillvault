@@ -193,16 +193,6 @@ function Cart() {
                 <span>Proceed to checkout</span>
                 <FiArrowUpRight aria-hidden="true" />
               </Link>
-
-              <div className="sv-cart-secure-note">
-                <FiLock aria-hidden="true" />
-
-                <p>
-                  Opening checkout starts anonymous product-interest tracking.
-                  Contact details are saved only after the checkout notice is
-                  acknowledged.
-                </p>
-              </div>
             </div>
 
             <div className="sv-cart-help">
